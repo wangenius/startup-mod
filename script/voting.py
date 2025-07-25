@@ -25,11 +25,10 @@ class VotingProcessor:
             temperature=0.6
         )
         
-        # 解析响应中的新状态和决策结果
         result = response.choices[0].message.content
         
-        # 这里需要根据实际响应格式解析出新的游戏状态
-        # 简化示例，实际中可能需要更复杂的解析逻辑
+        ######## 需要根据实际响应格式解析出新的游戏状态
+        ######## 后续调
         new_game_state = game_state.copy()
         new_game_state[f"round_{round_number}_decisions"] = votes
         

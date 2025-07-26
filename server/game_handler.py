@@ -13,6 +13,7 @@ from models import GameState, Role, MessageType, ROLE_DEFINITIONS, ROUND_INFO
 from connection_manager import connection_manager
 from room_manager import room_manager
 from script.step1_background import BackgroundGenerator
+from script.role_generator import RoleGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +137,37 @@ class GameHandler:
                 # 如果生成失败，使用默认背景
                 room.background = "创业团队正在开始他们的创业之旅..."
 
+            # 根据背景故事生成动态角色定义
+            dynamic_roles = ROLE_DEFINITIONS  # 默认使用硬编码角色
+            try:
+                role_generator = RoleGenerator()
+                generated_roles = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    role_generator.generate_roles_from_background,
+                    room.background,
+                )
+                # 转换生成的角色格式以匹配前端期望的格式
+                dynamic_roles = {}
+                for role_key, role_data in generated_roles.items():
+                    # 将字符串键转换为Role枚举以匹配ROLE_DEFINITIONS的键类型
+                    try:
+                        role_enum = Role(role_key)
+                        default_actions = ROLE_DEFINITIONS.get(role_enum, {}).get("actions", [])
+                    except ValueError:
+                        # 如果角色键无效，使用空的actions列表
+                        default_actions = []
+                    
+                    dynamic_roles[role_key] = {
+                        "name": role_data["name"],
+                        "description": role_data["description"],
+                        "actions": default_actions
+                    }
+                logger.info(f"房间 {room_id} 生成动态角色定义成功")
+            except Exception as e:
+                logger.error(f"房间 {room_id} 生成动态角色定义失败: {str(e)}")
+                # 如果生成失败，使用默认角色定义
+                dynamic_roles = ROLE_DEFINITIONS
+
             room.game_state = GameState.ROLE_SELECTION
             logger.info(f"房间 {room_id} 开始游戏，进入角色选择阶段")
 
@@ -146,7 +178,7 @@ class GameHandler:
                     "data": {
                         "startup_idea": room.startup_idea,
                         "background": room.background,
-                        "roles": ROLE_DEFINITIONS,
+                        "roles": dynamic_roles,
                     },
                 },
             )

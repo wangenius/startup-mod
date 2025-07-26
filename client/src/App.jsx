@@ -60,6 +60,7 @@ function App() {
   const [completedRound, setCompletedRound] = useState(null);
   const [completedRoundActions, setCompletedRoundActions] = useState([]);
   const [gameBackground, setGameBackground] = useState(null);
+  const [roleDefinitions, setRoleDefinitions] = useState(null);
 
   const [_, setMessages] = useState([]);
 
@@ -306,6 +307,9 @@ function App() {
         if (message.data && message.data.background) {
           setGameBackground(message.data.background);
         }
+        if (message.data && message.data.roles) {
+          setRoleDefinitions(message.data.roles);
+        }
         addMessage("🚀 游戏开始，请选择角色");
         break;
       case "role_selected":
@@ -503,6 +507,7 @@ function App() {
     setCompletedRound(null);
     setCompletedRoundActions([]);
     setGameBackground(null);
+    setRoleDefinitions(null);
 
     // 保存新的游戏状态
     saveGameState(playerName, currentRoom, GAME_STATES.LOBBY);
@@ -556,6 +561,7 @@ function App() {
             onRoleSelect={handleRoleSelect}
             selectedRoles={selectedRoles}
             gameBackground={gameBackground}
+            roleDefinitions={roleDefinitions}
           />
         );
 

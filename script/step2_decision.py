@@ -1,10 +1,10 @@
 import os
 import json
+import os
 from dotenv import load_dotenv
 from llm import LLM
 
 # 使用绝对路径定位prompt文件
-import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # 读取prompt模板
@@ -39,23 +39,52 @@ class DecisionMaker:
         # 调用LLM生成事件和选项
         event_content = self.llm.text(prompt, temperature=0.7)
 
-        # 解析生成的事件和选项
-        event_lines = event_content.strip().split('\n')
+        # 解析生成的事件和选项（JSON格式）
         event = {'description': '', 'options': []}
+        private_messages = {}
 
-        for line in event_lines:
-            if line.startswith('事件:'):
-                event['description'] = line.replace('事件:', '').strip()
-            elif line.startswith('选项'):
-                option_num = line.split(':')[0].replace('选项', '').strip()
-                option_text = line.split(':', 1)[1].strip()
-                event['options'].append(f'选项{option_num}: {option_text}')
+        try:
+            # 尝试解析JSON
+            response_json = json.loads(event_content)
+            
+            # 提取事件信息
+            event_json = response_json.get('event', {})
+            event['description'] = event_json.get('event_description', '')
+            
+            # 提取选项（A,B,C,D转换为1,2,3,4）
+            options = event_json.get('decision_options', {})
+            for i, (key, value) in enumerate(options.items(), 1):
+                event['options'].append(f'选项{i}: {value}')
+                
+            # 提取私人信息
+            private_messages = response_json.get('private_messages', {})
+        except json.JSONDecodeError:
+            # 如果JSON解析失败，尝试使用旧的文本解析方式
+            event_lines = event_content.strip().split('\n')
+            for line in event_lines:
+                if line.startswith('事件:'):
+                    event['description'] = line.replace('事件:', '').strip()
+                elif line.startswith('选项'):
+                    option_num = line.split(':')[0].replace('选项', '').strip()
+                    option_text = line.split(':', 1)[1].strip()
+                    event['options'].append(f'选项{option_num}: {option_text}')
 
+        # 显示事件和选项
         print(f"\n第{round_num}轮事件:")
         print(event['description'])
         print("\n选项:")
         for option in event['options']:
             print(option)
+
+        # 显示私人信息
+        if private_messages:
+            print("\n===== 私人信息 =====")
+            for role, message in private_messages.items():
+                print(f"\n{role}的私人信息:")
+                print(message)
+                input("按Enter键继续...")
+        else:
+            print("\n未获取到私人信息。")
 
         return event
 

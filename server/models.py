@@ -187,6 +187,14 @@ class GameRoom(BaseModel):
         else:
             success_level = "创业失败"
         
+        # 计算玩家表现
+        player_performance = self._calculate_player_performance()
+        
+        # 生成玩家分数字典，确保前端兼容性
+        player_scores = {}
+        for perf in player_performance:
+            player_scores[perf["player"]] = min(50 + perf["contribution_score"], 100)
+        
         return {
             "final_score": final_score,
             "success_level": success_level,
@@ -198,7 +206,8 @@ class GameRoom(BaseModel):
             },
             "achievements": self._generate_achievements(final_score),
             "timeline": self._generate_timeline(),
-            "player_performance": self._calculate_player_performance()
+            "player_performance": player_performance,
+            "playerScores": player_scores
         }
 
     def _generate_achievements(self, score: int) -> List[str]:

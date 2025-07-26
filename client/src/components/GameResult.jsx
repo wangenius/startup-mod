@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 function GameResult({ gameResult, players, onRestartGame }) {
   const [showDetails, setShowDetails] = useState(false);
 
   const getSuccessLevel = (score) => {
-    if (score >= 90) return { level: '巨大成功', color: 'text-green-600', icon: '🚀' };
-    if (score >= 70) return { level: '成功', color: 'text-blue-600', icon: '✅' };
-    if (score >= 50) return { level: '一般', color: 'text-yellow-600', icon: '⚠️' };
-    return { level: '失败', color: 'text-red-600', icon: '❌' };
+    if (score >= 90)
+      return { level: "巨大成功", color: "text-green-600", icon: "🚀" };
+    if (score >= 70)
+      return { level: "成功", color: "text-blue-600", icon: "✅" };
+    if (score >= 50)
+      return { level: "一般", color: "text-yellow-600", icon: "⚠️" };
+    return { level: "失败", color: "text-red-600", icon: "❌" };
   };
 
   // 添加空值检查，防止页面刷新时 gameResult 为 null
@@ -16,7 +19,9 @@ function GameResult({ gameResult, players, onRestartGame }) {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-xl p-8 text-center">
           <div className="text-4xl mb-4">⏳</div>
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">加载游戏结果中...</h2>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+            加载游戏结果中...
+          </h2>
           <p className="text-gray-600">请稍候，正在获取游戏数据</p>
         </div>
       </div>
@@ -39,22 +44,24 @@ function GameResult({ gameResult, players, onRestartGame }) {
             最终得分: {gameResult.finalScore || 0}/100
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            {gameResult.summary || '游戏已完成，感谢您的参与！'}
+            {gameResult.summary || "游戏已完成，感谢您的参与！"}
           </p>
         </div>
 
         {/* 详细统计 */}
         <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-gray-700">📊 详细统计</h2>
+            <h2 className="text-2xl font-semibold text-gray-700">
+              📊 详细统计
+            </h2>
             <button
               onClick={() => setShowDetails(!showDetails)}
               className="text-blue-600 hover:text-blue-800 transition-colors"
             >
-              {showDetails ? '收起详情' : '展开详情'}
+              {showDetails ? "收起详情" : "展开详情"}
             </button>
           </div>
-          
+
           {/* 关键指标 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
@@ -82,31 +89,41 @@ function GameResult({ gameResult, players, onRestartGame }) {
               <div className="text-sm text-gray-600">团队规模</div>
             </div>
           </div>
-          
+
           {/* 详细信息 */}
           {showDetails && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">🎯 关键成就</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  🎯 关键成就
+                </h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <ul className="space-y-2">
                     {gameResult.achievements?.map((achievement, index) => (
-                      <li key={index} className="flex items-center text-gray-700">
+                      <li
+                        key={index}
+                        className="flex items-center text-gray-700"
+                      >
                         <span className="text-green-500 mr-2">✓</span>
                         {achievement}
                       </li>
                     )) || [
-                      <li key="default" className="flex items-center text-gray-700">
+                      <li
+                        key="default"
+                        className="flex items-center text-gray-700"
+                      >
                         <span className="text-green-500 mr-2">✓</span>
                         完成了创业模拟游戏
-                      </li>
+                      </li>,
                     ]}
                   </ul>
                 </div>
               </div>
-              
+
               <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">📈 发展历程</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  📈 发展历程
+                </h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="space-y-3">
                     {gameResult.timeline?.map((event, index) => (
@@ -119,7 +136,7 @@ function GameResult({ gameResult, players, onRestartGame }) {
                     )) || [
                       <div key="default" className="text-gray-600">
                         游戏历程记录暂无详细信息
-                      </div>
+                      </div>,
                     ]}
                   </div>
                 </div>
@@ -130,18 +147,36 @@ function GameResult({ gameResult, players, onRestartGame }) {
 
         {/* 玩家表现 */}
         <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-700">🏆 玩家表现</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+            🏆 玩家表现
+          </h2>
           <div className="space-y-3">
             {players.map((player, index) => {
-              const playerScore = gameResult.playerScores?.[player.name] || Math.floor(Math.random() * 40) + 60;
+              // 优先使用服务器返回的playerScores数据
+              const playerScore =
+                gameResult.playerScores?.[player.name] ||
+                Math.min(60 + (player.name.charCodeAt(0) % 30), 100);
+
+              // 获取玩家表现详细数据用于显示
+              const playerPerformance = gameResult.player_performance?.find(
+                (p) => p.player === player.name
+              );
+
               return (
                 <div
                   key={index}
                   className="p-4 rounded-lg border border-gray-200 bg-gray-50 flex justify-between items-center"
                 >
                   <div>
-                    <div className="font-medium text-gray-700">{player.name}</div>
+                    <div className="font-medium text-gray-700">
+                      {player.name}
+                    </div>
                     <div className="text-sm text-gray-600">{player.role}</div>
+                    {playerPerformance && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        行动次数: {playerPerformance.actions_taken}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-semibold text-blue-600">
@@ -157,7 +192,6 @@ function GameResult({ gameResult, players, onRestartGame }) {
           </div>
         </div>
 
-        {/* 操作按钮 */}
         <div className="text-center">
           <button
             onClick={onRestartGame}

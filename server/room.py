@@ -374,19 +374,35 @@ class GameRoom(BaseModel):
         # 获取每轮的分析结果
         round_outputs = []
         for round_num in range(1, 6):
+            round_output_parts = []
+            
+            # 获取轮次情况
+            if round_num in self.round_situation:
+                situation_data = self.round_situation[round_num]
+                if isinstance(situation_data, dict):
+                    situation = situation_data.get('impact', '上一轮的决策产生了影响...')
+                else:
+                    situation = str(situation_data)
+                round_output_parts.append(f"第{round_num}轮情况：{situation}")
+            
+            # 获取轮次事件
             if round_num in self.round_events:
                 event_data = self.round_events[round_num]
-                situation = event_data.get('situation', '')
-                event = event_data.get('event', '')
-                round_output = f"第{round_num}轮情况：{situation}\n事件：{event}"
-                
-                # 添加该轮的玩家行动
-                if round_num in self.round_actions:
-                    actions = self.round_actions[round_num]
-                    action_summary = "\n".join([f"{action.get('player')}({action.get('role', '')})：{action.get('action', '')}" for action in actions])
-                    round_output += f"\n玩家决策：\n{action_summary}"
-                
-                round_outputs.append(round_output)
+                # round_events存储的是事件对象，可能包含description等字段
+                if isinstance(event_data, dict):
+                    event_desc = event_data.get('description', '') or str(event_data)
+                else:
+                    event_desc = str(event_data)
+                round_output_parts.append(f"事件：{event_desc}")
+            
+            # 添加该轮的玩家行动
+            if round_num in self.round_actions:
+                actions = self.round_actions[round_num]
+                action_summary = "\n".join([f"{action.get('player')}({action.get('role', '')})：{action.get('action', '')}" for action in actions])
+                round_output_parts.append(f"玩家决策：\n{action_summary}")
+            
+            if round_output_parts:
+                round_outputs.append("\n".join(round_output_parts))
             else:
                 round_outputs.append(f"第{round_num}轮：暂无数据")
         
@@ -399,10 +415,16 @@ class GameRoom(BaseModel):
         prompt = prompt.replace("{output5}", round_outputs[4] if len(round_outputs) > 4 else "暂无数据")
         
         # 替换玩家姓名占位符
+        # 首先替换CEO的姓名
+        ceo_player = None
         for player in self.players:
             if player.role == Role.CEO:
-                prompt = prompt.replace("[玩家姓名]", player.name)
+                ceo_player = player
                 break
+        
+        if ceo_player:
+            # 替换CEO部分的[玩家姓名]
+            prompt = prompt.replace("CEO/Founder：[玩家姓名]", f"CEO/Founder：{ceo_player.name}")
         
         # 替换其他角色的玩家姓名
         role_mapping = {Role.CTO: "CTO", Role.CMO: "CMO", Role.COO: "COO"}

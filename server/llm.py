@@ -9,7 +9,8 @@ from logger_config import logger
 # 加载.env文件
 load_dotenv()
 from openai.types.chat import ChatCompletionMessageParam
-model = "qwen/qwen3-coder-480b-a35b-instruct"
+# model = "qwen/qwen3-coder-480b-a35b-instruct"
+model = "moonshotai/kimi-k2-instruct"
 
 
 class LLM:

@@ -429,7 +429,8 @@ class GameHandler:
             # 保存事件和私人信息到房间状态
             room.round_events[1] = event_data["event"]
             room.round_private_messages[1] = event_data["private_messages"]
-            room.round_situation[1] = event_data["situation"]
+            if "situation" in event_data:
+                room.round_situation[1] = event_data["situation"]
 
             logger.info(f"房间 {room_id} 第1轮事件生成成功")
         except Exception as e:
@@ -587,6 +588,8 @@ class GameHandler:
             room.round_private_messages[room.current_round] = event_data[
                 "private_messages"
             ]
+            if "situation" in event_data:
+                room.round_situation[room.current_round] = event_data["situation"]
 
             logger.info(f"房间 {room_id} 第{room.current_round}轮事件生成成功")
             logger.info(f"私人信息内容: {event_data['private_messages']}")

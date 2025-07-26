@@ -70,6 +70,48 @@ function App() {
   const [_, setMessages] = useState([]);
 
   const wsRef = useRef(null);
+  const audioRef = useRef(null);
+
+  // 初始化背景音乐
+  useEffect(() => {
+    const audio = new Audio('/背景音效.mp3');
+    audio.loop = true;
+    audio.volume = 0.3; // 设置音量为30%
+    audioRef.current = audio;
+
+    // 尝试自动播放背景音乐
+    const playAudio = async () => {
+      try {
+        await audio.play();
+        console.log('背景音乐开始播放');
+      } catch (error) {
+        console.log('自动播放失败，需要用户交互后播放:', error);
+        // 添加点击事件监听器，在用户首次交互时播放音乐
+        const handleUserInteraction = async () => {
+          try {
+            await audio.play();
+            console.log('用户交互后背景音乐开始播放');
+            document.removeEventListener('click', handleUserInteraction);
+            document.removeEventListener('keydown', handleUserInteraction);
+          } catch (err) {
+            console.log('播放失败:', err);
+          }
+        };
+        document.addEventListener('click', handleUserInteraction);
+        document.addEventListener('keydown', handleUserInteraction);
+      }
+    };
+
+    playAudio();
+
+    // 清理函数
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   // 检查房间状态并重连
   const reconnectToRoom = async (playerName, roomId, savedGameState) => {
@@ -667,7 +709,7 @@ function App() {
       {renderCurrentState()}
 
       {/* 调试信息 */}
-      {import.meta.env?.DEV && (
+      {/* {import.meta.env?.DEV && (
         <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white p-2 rounded text-xs max-w-xs">
           <div>状态: {gameState}</div>
           <div>连接: {wsConnected ? "已连接" : "未连接"}</div>
@@ -675,7 +717,7 @@ function App() {
           <div>轮次: {currentRound}/5</div>
           <button onClick={handleRestartGame}>重新开始</button>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

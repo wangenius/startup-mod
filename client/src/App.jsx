@@ -340,6 +340,17 @@ function App() {
         }
         addMessage("🚀 游戏开始，请选择角色");
         break;
+      case "transition_animation":
+        setGameState(GAME_STATES.EVENT_GENERATION);
+        saveGameState(playerName, currentRoom, GAME_STATES.EVENT_GENERATION);
+        if (message.data && message.data.background) {
+          setGameBackground(message.data.background);
+        }
+        if (message.data && message.data.roles) {
+          setRoleDefinitions(message.data.roles);
+        }
+        addMessage("🎬 进入过渡动画，准备开始游戏");
+        break;
       case "role_selected":
         setSelectedRoles(message.data.selectedRoles);
         setPlayers(message.data.players);

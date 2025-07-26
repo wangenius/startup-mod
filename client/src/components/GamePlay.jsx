@@ -15,7 +15,6 @@ function GamePlay({
   roundEvent,
   privateMessages,
   onActionSubmit,
-  playerActions,
 }) {
   const [selectedAction, setSelectedAction] = useState("");
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -140,11 +139,6 @@ function GamePlay({
         <br />
         {roundEvent?.event_description || "事件加载中..."}
       </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-white text-2xl font-bold animate-pulse">
-          事件展示中...
-        </div>
-      </div>
     </div>
   );
 
@@ -167,7 +161,7 @@ function GamePlay({
       <div className="left-[39px] top-[88px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal">
         第{currentRound}阶段
         <br />
-        {roundEvent?.event_description}
+        {roundEvent?.event_description.slice(0, 20)}...
       </div>
       <div className="left-[93px] top-[424px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
         请在和团队讨论后做出选择
@@ -239,45 +233,23 @@ function GamePlay({
       <div className="left-[341px] top-[800px] absolute text-center justify-start text-white text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
         {discussionTimeLeft}s
       </div>
-      <div className="left-[131px] top-[114px] absolute opacity-60 text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
+
+      <div className="left-[131px] top-[114px] absolute opacity-60 text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal">
         开会时间
         <br />
         请轮流发表意见
       </div>
 
-      {/* 玩家状态显示 */}
-      <div className="absolute top-[300px] left-[48px] w-80">
-        {gameState.players?.map((player, index) => {
-          const hasSubmittedAction = playerActions?.some(
-            (action) => action.player === player.name
-          );
-          return (
-            <div key={index} className="mb-4 p-4 bg-gray-800 rounded-lg">
-              <div className="flex justify-between items-center">
-                <div className="text-white">
-                  {player.name} {player.name === playerName && "(你)"}
-                </div>
-                <div
-                  className={`text-sm ${
-                    hasSubmittedAction ? "text-green-400" : "text-gray-400"
-                  }`}
-                >
-                  {hasSubmittedAction ? "✅ 已准备" : "⏳ 讨论中"}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="absolute bottom-[100px] left-[48px] w-80">
-        <button
-          onClick={() => setCurrentPhase(GAME_PHASES.SELECTION)}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          进入选择阶段
-        </button>
-      </div>
+      <img
+        className="w-96 h-64 left-[-14px] top-[428px] absolute"
+        src="./askAI.png"
+      />
+      <button
+        onClick={() => setCurrentPhase(GAME_PHASES.SELECTION)}
+        className="w-full text-white py-3 px-4 rounded-lg absolute bottom-[100px] mx-auto font-medium"
+      >
+        进入选择阶段
+      </button>
     </div>
   );
 
@@ -294,14 +266,13 @@ function GamePlay({
             <div
               key={key}
               className={`self-stretch h-16 px-10 py-2.5 relative rounded-md flex flex-col justify-center items-center gap-2.5 overflow-hidden cursor-pointer transition-all ${
-                selectedAction === key ? "bg-white" : "bg-neutral-400"
+                selectedAction === key ? "bg-white" : "bg-neutral-700"
               }`}
               onClick={() => setSelectedAction(key)}
             >
-              <div className="w-80 h-16 left-[1px] top-[1px] absolute bg-neutral-800 rounded-[3px] outline outline-1 outline-offset-[-0.50px]" />
               <div
-                className={`w-64 text-center justify-start text-lg font-normal font-['Cactus_Classical_Serif'] leading-tight ${
-                  selectedAction === key ? "text-white" : "text-neutral-400"
+                className={`w-64 text-center justify-start text-lg font-normal font-['Cactus_Classical_Serif'] leading-tight relative z-10 ${
+                  selectedAction === key ? "text-black" : "text-white"
                 }`}
               >
                 {key}.{action}
@@ -335,10 +306,7 @@ function GamePlay({
       {/* 私人信息 */}
       {privateMessages && privateMessages[String(playerRole).toUpperCase()] && (
         <div className="w-80 h-44 left-[38px] top-[198px] absolute">
-          <img
-            className="w-80 h-44 left-[-2px] top-0 absolute"
-            src="./background2.png"
-          />
+          <img className="left-[-2px] top-0 absolute" src="./paper.png" />
           <div className="w-80 left-[7px] top-[73px] absolute text-center justify-start text-zinc-800 text-lg font-normal font-['Cactus_Classical_Serif'] leading-normal [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)]">
             {privateMessages[String(playerRole).toUpperCase()]}
           </div>
@@ -358,7 +326,7 @@ function GamePlay({
       <div className="left-[39px] top-[88px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal">
         第{currentRound}阶段
         <br />
-        {roundEvent?.event_description}
+        {roundEvent?.event_description.slice(0, 20)}...
       </div>
 
       {!hasSubmitted ? (

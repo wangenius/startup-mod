@@ -407,8 +407,6 @@ class GameHandler:
             },
         )
 
-        await asyncio.sleep(8000)
-
         # 第五步：开始生成第一轮事件
         room.current_round = 1
         logger.info(f"房间 {room_id} 开始生成第1轮事件")

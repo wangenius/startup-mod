@@ -509,6 +509,14 @@ function App() {
     addMessage(`第${currentRound}轮游戏开始`);
   };
 
+  // 处理加载完成后开始游戏
+  const handleLoadingComplete = () => {
+    setGameState(GAME_STATES.PLAYING);
+    setCurrentRound(1);
+    saveGameState(playerName, currentRoom, GAME_STATES.PLAYING);
+    addMessage(`🎯 游戏正式开始 - 第1轮`);
+  };
+
   // 处理继续下一轮 - 已移除，因为后端现在自动进入下一轮
 
   // 处理重新开始游戏
@@ -598,6 +606,7 @@ function App() {
             playerName={playerName}
             gameBackground={gameBackground}
             roleDefinitions={roleDefinitions}
+            onLoadingComplete={handleLoadingComplete}
           />
         );
 

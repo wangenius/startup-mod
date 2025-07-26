@@ -1,4 +1,4 @@
-/*做出自己的选择页面*/
+/*做出自己的选择*/
 
 <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
   <div className="left-[136px] top-[426px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">请做出CEO的选择</div>
@@ -20,11 +20,11 @@
   <div className="left-[349px] top-[792px] absolute text-center justify-start text-white text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed">20s</div>
   <div className="w-40 h-40 left-[201px] top-[33px] absolute">
     <div className="w-20 h-20 left-[55px] top-[36px] absolute bg-gray-200/50 blur-[50px]" />
-    <img className="w-40 h-40 left-0 top-0 absolute" src="https://placehold.co/165x165" />
+    <img className="w-40 h-40 left-0 top-0 absolute" src="client\src\styles\pics\image (3).png" />
     <div className="w-16 h-10 left-[92px] top-[122px] absolute text-right justify-start text-white text-sm font-normal font-['Space_Grotesk']">林燃<br/>CEO创始人<br/></div>
   </div>
   <div className="w-80 h-44 left-[38px] top-[198px] absolute">
-    <img className="w-80 h-44 left-[-2px] top-0 absolute" src="https://placehold.co/330x184" />
+    <img className="w-80 h-44 left-[-2px] top-0 absolute" src="client\src\styles\pics\paper.png" />
     <div className="w-80 left-[7px] top-[73px] absolute text-center justify-start text-zinc-800 text-lg font-normal font-['Cactus_Classical_Serif'] leading-normal [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)]">投资人王总更看重“执行力和团队协同”，对过早营销有疑虑。</div>
     <div className="left-[68.71px] top-[30.22px] absolute opacity-60 justify-start text-neutral-600 text-base font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">你的信息 只有你可以看见</div>
     <img className="w-9 h-9 left-[274px] top-[135px] absolute" src="https://placehold.co/38x37" />

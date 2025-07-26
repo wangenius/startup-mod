@@ -1,39 +1,33 @@
-function LoadingPage({ isHost = false, onStartGame }) {
+function LoadingPage() {
   return (
-    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
-      <img
-        className="w-96 h-[536px] left-0 top-0 absolute"
-        src="https://placehold.co/402x536"
-      />
-      <div className="w-80 left-[42px] top-[615px] absolute text-center justify-start text-white text-2xl font-normal font-['Cactus_Classical_Serif'] leading-loose">
-        🎯 所有角色已选择完成！
-        <br />
-        {isHost ? (
-          <>
-            准备开始游戏吗？
-            <br />
-            <button 
-              onClick={onStartGame}
-              className="mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-            >
-              开始游戏
-            </button>
-          </>
-        ) : (
-          <>
-            等待房主开始游戏...
-            <br />
-            <div className="mt-4 text-lg opacity-75">⏳ 请耐心等待</div>
-          </>
-        )}
-      </div>
-      <div className="w-96 h-12 left-0 top-0 absolute overflow-hidden">
-        <div className="w-6 h-3 left-[360.66px] top-[18.66px] absolute opacity-30 rounded-[2.87px] border-1 border-white" />
-        <div className="w-[1.43px] h-1 left-[385.41px] top-[22.60px] absolute opacity-40 bg-white" />
-        <div className="w-5 h-2 left-[362.81px] top-[20.81px] absolute bg-white rounded-sm" />
-        <div className="w-14 h-6 left-[22.60px] top-[12.92px] absolute rounded-[34.44px]">
-          <div className="w-8 h-3 left-[13.40px] top-[5.56px] absolute bg-white" />
+    <div className="w-96 h-[874px] relative bg-black overflow-hidden">
+      <div className="w-72 h-48 left-[62px] top-[297px] absolute bg-white/0 blur-lg" />
+      <div className="w-24 h-28 left-[159px] top-[630px] absolute">
+        <img
+          className="w-24 h-24 left-0 top-0 absolute"
+          src="./videoExport-2025-07-26@12-08-48.606-540x540@60fps.mp4"
+        />
+        <div className="left-[6px] top-[93px] absolute text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+          即将开始
         </div>
+      </div>
+      <div className="left-[158px] top-[368px] absolute text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+        你是林燃
+      </div>
+      <div className="left-[87px] top-[421px] absolute text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+        你的任务是带领公司
+        <br />
+        成功上市，估值一千万！
+        <br />
+      </div>
+      <div className="w-72 h-[3px] left-[61px] top-[770px] absolute bg-neutral-400 rounded-[1px]" />
+      <div className="w-0.5 h-[3px] left-[61px] top-[770px] absolute bg-slate-300 rounded-[1px]" />
+      <img
+        className="w-72 h-48 left-[51px] top-[139px] absolute"
+        src="client\src\styles\pics\CEO.png"
+      />
+      <div className="left-[311px] top-[297px] absolute text-right justify-end text-white text-sm font-medium font-['Space_Grotesk'] [text-shadow:_0px_2px_1px_rgb(0_0_0_/_0.25)]">
+        林燃
       </div>
     </div>
   );

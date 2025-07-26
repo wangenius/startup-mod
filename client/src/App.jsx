@@ -10,7 +10,7 @@ import RoomManager from "./components/RoomManager";
 import RoundResult from "./components/RoundResult";
 import WelcomePage from "./components/WelcomePage";
 import EventGeneration from "./components/EventGeneration";
-import { InitialPage } from "./page/InitialPage";
+import { InitialPage } from "./components/InitialPage";
 
 // 游戏状态枚举
 const GAME_STATES = {

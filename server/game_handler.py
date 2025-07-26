@@ -63,7 +63,9 @@ class GameHandler:
         if room.all_players_have_ideas():
             # 选择一个想法作为团队的创业想法（这里简单选择第一个）
             room.startup_idea = room.get_online_players()[0].startup_idea
-            logger.info(f"房间 {room_id} 确定创业想法: {room.startup_idea}， 确认创业想法之后应该直接开始游戏。")
+            logger.info(
+                f"房间 {room_id} 确定创业想法: {room.startup_idea}， 确认创业想法之后应该直接开始游戏。"
+            )
 
             # 广播所有想法已提交完成，可以开始游戏
             await connection_manager.broadcast_to_room(
@@ -259,7 +261,7 @@ class GameHandler:
                     },
                 },
             )
-        
+
         # 角色选择完成后会自动开始游戏，不再需要房主手动开始
 
     @staticmethod
@@ -319,7 +321,7 @@ class GameHandler:
         # 检查是否所有玩家都选择了角色
         if room.all_players_have_roles():
             logger.info(f"房间 {room_id} 所有角色已选择，直接开始游戏")
-            
+
             # 所有玩家选择完角色后，直接开始游戏
             await GameHandler._auto_start_game_after_role_selection(room_id)
 
@@ -404,6 +406,8 @@ class GameHandler:
                 },
             },
         )
+
+        await asyncio.sleep(8000)
 
         # 第五步：开始生成第一轮事件
         room.current_round = 1

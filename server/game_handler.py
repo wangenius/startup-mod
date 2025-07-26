@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict
 from datetime import datetime
 import logging
 import asyncio
@@ -9,12 +9,9 @@ import sys
 script_dir = os.path.join(os.path.dirname(__file__), "script")
 sys.path.append(script_dir)
 
-from models import GameState, Role, MessageType, ROLE_DEFINITIONS
+from room import GameState, Role, MessageType
 from connection_manager import connection_manager
 from room_manager import room_manager
-from script.step1_background import BackgroundGenerator
-from script.role_generator import RoleGenerator
-from script.step2_decision import DecisionMaker
 
 logger = logging.getLogger(__name__)
 
@@ -111,12 +108,10 @@ class GameHandler:
                 room_id,
                 {
                     "type": MessageType.GAME_LOADING,
-                    "data": {
-                        "message": "AI正在生成游戏背景，请稍候..."
-                    },
+                    "data": {"message": "AI正在生成游戏背景，请稍候..."},
                 },
             )
-            
+
             # 收集所有玩家的想法
             player_ideas = [
                 p.startup_idea for p in room.get_online_players() if p.startup_idea
@@ -124,10 +119,9 @@ class GameHandler:
 
             # 生成背景故事
             try:
-                background_generator = BackgroundGenerator()
                 background = await asyncio.get_event_loop().run_in_executor(
                     None,
-                    background_generator.generate_background_from_ideas,
+                    room.generate_background_from_ideas,
                     player_ideas,
                 )
                 room.background = background
@@ -139,29 +133,26 @@ class GameHandler:
                 room.background = "创业团队正在开始他们的创业之旅..."
 
             # 根据背景故事生成动态角色定义
-            dynamic_roles = ROLE_DEFINITIONS  # 默认使用硬编码角色
+            dynamic_roles = {}  # 默认使用硬编码角色
             try:
-                role_generator = RoleGenerator()
                 generated_roles = await asyncio.get_event_loop().run_in_executor(
                     None,
-                    role_generator.generate_roles_from_background,
+                    room.generate_roles_from_background,
                     room.background,
                 )
                 # 转换生成的角色格式以匹配前端期望的格式
                 dynamic_roles = {}
                 for role_key, role_data in generated_roles.items():
-                    # 将字符串键转换为Role枚举以匹配ROLE_DEFINITIONS的键类型
                     try:
-                        role_enum = Role(role_key)
-                        default_actions = ROLE_DEFINITIONS.get(role_enum, {}).get("actions", [])
+                        action = role_data.get("actions", [])
                     except ValueError:
                         # 如果角色键无效，使用空的actions列表
-                        default_actions = []
-                    
+                        action = []
+
                     dynamic_roles[role_key] = {
                         "name": role_data["name"],
                         "description": role_data["description"],
-                        "actions": default_actions
+                        "actions": action,
                     }
                 # 保存动态角色定义到房间状态中
                 room.dynamic_roles = dynamic_roles
@@ -169,7 +160,7 @@ class GameHandler:
             except Exception as e:
                 logger.error(f"房间 {room_id} 生成动态角色定义失败: {str(e)}")
                 # 如果生成失败，使用默认角色定义
-                dynamic_roles = ROLE_DEFINITIONS
+                dynamic_roles = {}
 
             room.game_state = GameState.ROLE_SELECTION
             logger.info(f"房间 {room_id} 开始游戏，进入角色选择阶段")
@@ -251,33 +242,33 @@ class GameHandler:
                 room_id,
                 {
                     "type": MessageType.ROUND_LOADING,
-                    "data": {
-                        "round": 1,
-                        "message": "AI正在生成第1轮事件，请稍候..."
-                    },
+                    "data": {"round": 1, "message": "AI正在生成第1轮事件，请稍候..."},
                 },
             )
 
             # 生成第一轮事件
             try:
-                decision_maker = DecisionMaker(room.startup_idea or room.background)
                 event_data = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    decision_maker.generate_event,
-                    1
+                    None, room.generate_event, 1
                 )
-                
+
                 # 保存事件和私人信息到房间状态
-                room.round_events[1] = event_data['event']
-                room.round_private_messages[1] = event_data['private_messages']
-                
+                room.round_events[1] = event_data["event"]
+                room.round_private_messages[1] = event_data["private_messages"]
+                room.round_situation[1] = event_data["situation"]
+
                 logger.info(f"房间 {room_id} 第1轮事件生成成功")
             except Exception as e:
                 logger.error(f"房间 {room_id} 生成第1轮事件失败: {str(e)}")
                 # 如果生成失败，使用默认事件
                 default_event = {
-                    'description': '团队面临第一个重要决策...',
-                    'options': ['选项1: 保守策略', '选项2: 激进策略', '选项3: 平衡策略', '选项4: 创新策略']
+                    "description": "团队面临第一个重要决策...",
+                    "options": [
+                        "选项1: 保守策略",
+                        "选项2: 激进策略",
+                        "选项3: 平衡策略",
+                        "选项4: 创新策略",
+                    ],
                 }
                 room.round_events[1] = default_event
                 room.round_private_messages[1] = {}
@@ -292,7 +283,7 @@ class GameHandler:
                         "round": 1,
                         "roundInfo": room.get_round_info(1),
                         "roundEvent": room.round_events[1],
-                        "privateMessages": room.round_private_messages[1]
+                        "privateMessages": room.round_private_messages[1],
                     },
                 },
             )
@@ -356,12 +347,15 @@ class GameHandler:
                 current_round_result = {
                     "round": room.current_round,
                     "actions": room.round_actions.get(room.current_round, []),
-                    "success": len(room.round_actions.get(room.current_round, [])) > 0  # 简化的成功判断
+                    "success": len(room.round_actions.get(room.current_round, []))
+                    > 0,  # 简化的成功判断
                 }
-                
+
                 # 生成下一轮的动态信息
-                next_round_info = (current_round_result)
-                logger.info(f"房间 {room_id} 生成第{room.current_round + 1}轮动态信息: {next_round_info}")
+                next_round_info = room.generate_next_round_info(current_round_result)
+                logger.info(
+                    f"房间 {room_id} 生成第{room.current_round + 1}轮动态信息: {next_round_info}"
+                )
             except Exception as e:
                 logger.error(f"房间 {room_id} 生成下一轮动态信息失败: {str(e)}")
 
@@ -420,43 +414,50 @@ class GameHandler:
                 "type": MessageType.ROUND_LOADING,
                 "data": {
                     "round": room.current_round,
-                    "message": f"AI正在生成第{room.current_round}轮事件，请稍候..."
+                    "message": f"AI正在生成第{room.current_round}轮事件，请稍候...",
                 },
             },
         )
 
         # 生成当前轮次的事件
         try:
-            decision_maker = DecisionMaker(room.startup_idea or room.background)
+
             # 设置之前的输出用于生成连贯的事件
             if room.current_round > 1:
                 previous_round = room.current_round - 1
                 if previous_round in room.round_actions:
-                    decision_maker.previous_output = {
-                        'round': previous_round,
-                        'players_choices': {},  # 这里可以根据实际行动数据构建
-                        'final_choice': 1,  # 简化处理
-                        'impact': '上一轮的决策产生了影响...'
+                    room.round_situation[room.current_round] = {
+                        "round": previous_round,
+                        "players_choices": {},  # 这里可以根据实际行动数据构建
+                        "final_choice": 1,  # 简化处理
+                        "impact": "上一轮的决策产生了影响...",
                     }
-            
+
             event_data = await asyncio.get_event_loop().run_in_executor(
-                None,
-                decision_maker.generate_event,
-                room.current_round
+                None, room.generate_event, room.current_round
             )
-            
+
             # 保存事件和私人信息到房间状态
-            room.round_events[room.current_round] = event_data['event']
-            room.round_private_messages[room.current_round] = event_data['private_messages']
-            
+            room.round_events[room.current_round] = event_data["event"]
+            room.round_private_messages[room.current_round] = event_data[
+                "private_messages"
+            ]
+
             logger.info(f"房间 {room_id} 第{room.current_round}轮事件生成成功")
             logger.info(f"私人信息内容: {event_data['private_messages']}")
         except Exception as e:
-            logger.error(f"房间 {room_id} 生成第{room.current_round}轮事件失败: {str(e)}")
+            logger.error(
+                f"房间 {room_id} 生成第{room.current_round}轮事件失败: {str(e)}"
+            )
             # 如果生成失败，使用默认事件
             default_event = {
-                'description': f'团队面临第{room.current_round}轮的重要决策...',
-                'options': ['选项1: 保守策略', '选项2: 激进策略', '选项3: 平衡策略', '选项4: 创新策略']
+                "description": f"团队面临第{room.current_round}轮的重要决策...",
+                "options": [
+                    "选项1: 保守策略",
+                    "选项2: 激进策略",
+                    "选项3: 平衡策略",
+                    "选项4: 创新策略",
+                ],
             }
             room.round_events[room.current_round] = default_event
             room.round_private_messages[room.current_round] = {}
@@ -471,7 +472,7 @@ class GameHandler:
                     "round": room.current_round,
                     "roundInfo": room.get_round_info(room.current_round),
                     "roundEvent": room.round_events[room.current_round],
-                    "privateMessages": room.round_private_messages[room.current_round]
+                    "privateMessages": room.round_private_messages[room.current_round],
                 },
             },
         )

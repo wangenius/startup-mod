@@ -37,6 +37,8 @@ function RoleSelection({
       };
     });
   };
+  console.log("roleDefinitions", roleDefinitions);
+  
 
   const ROLES = convertRoleDefinitions(roleDefinitions);
 

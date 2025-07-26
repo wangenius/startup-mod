@@ -1,8 +1,9 @@
+# 房间管理器
 from typing import Dict, Optional
 from datetime import datetime
 import logging
 
-from models import GameRoom, Player
+from room import GameRoom, Player
 
 logger = logging.getLogger(__name__)
 

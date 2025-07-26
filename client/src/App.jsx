@@ -191,6 +191,9 @@ function App() {
         setWsConnected(true);
         setCurrentRoom(roomId);
 
+        console.log("连接成功", message.data);
+        
+
         const {
           is_reconnect,
           game_state,
@@ -201,7 +204,7 @@ function App() {
           player_actions,
           game_result,
           background,
-          roles,
+          dynamic_roles:roles,
         } = message.data;
 
         // 更新玩家列表
@@ -286,6 +289,8 @@ function App() {
         }
       } else {
         handleWebSocketMessage(message);
+        console.log("收到消息", message);
+        
       }
     };
 

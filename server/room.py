@@ -3,6 +3,39 @@ from typing import Dict, List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 import random
+import os
+from llm import LLM
+
+# 读取prompt模板
+with open(
+    os.path.join(os.path.dirname(__file__), "prompt", "role_generation.txt"),
+    "r",
+    encoding="utf-8",
+) as f:
+    role_generator = f.read()
+
+# 读取prompt模板
+with open(
+    os.path.join(os.path.dirname(__file__), "prompt", "prompt1.txt"),
+    "r",
+    encoding="utf-8",
+) as f:
+    prompt_template = f.read()
+
+# 读取prompt模板
+with open(
+    os.path.join(os.path.dirname(__file__), "prompt", "prompt2.txt"),
+    "r",
+    encoding="utf-8",
+) as f:
+    prompt2_template = f.read()
+
+with open(
+    os.path.join(os.path.dirname(__file__), "prompt", "prompt3.txt"),
+    "r",
+    encoding="utf-8",
+) as f:
+    prompt3_template = f.read()
 
 
 # 枚举定义
@@ -14,7 +47,7 @@ class MessageType(str, Enum):
     IDEAS_COMPLETE = "ideas_complete"
     ROLE_SELECTED = "role_selected"
     ROLES_COMPLETE = "roles_complete"
-    ROUND_LOADING = "round_loading"  # 回合加载状态
+    ROUND_LOADING = "round_loading"
     ROUND_START = "round_start"
     ACTION_SUBMITTED = "action_submitted"
     ROUND_COMPLETE = "round_complete"
@@ -26,7 +59,7 @@ class MessageType(str, Enum):
 class GameState(str, Enum):
     LOBBY = "lobby"
     ROLE_SELECTION = "role_selection"
-    LOADING = "loading"  # 回合间加载状态
+    LOADING = "loading"  # 游戏加载状态
     PLAYING = "playing"
     FINISHED = "finished"
 
@@ -36,40 +69,6 @@ class Role(str, Enum):
     CTO = "cto"
     CMO = "cmo"
     COO = "coo"
-
-
-# 角色定义
-ROLE_DEFINITIONS = {
-    Role.CEO: {
-        "name": "首席执行官 (CEO)",
-        "description": "负责公司整体战略和决策",
-        "actions": ["制定战略", "融资决策", "团队管理", "市场扩张"]
-    },
-    Role.CTO: {
-        "name": "首席技术官 (CTO)",
-        "description": "负责技术架构和产品开发",
-        "actions": ["技术研发", "产品优化", "架构设计", "技术招聘"]
-    },
-    Role.CMO: {
-        "name": "首席营销官 (CMO)",
-        "description": "负责市场营销和品牌推广",
-        "actions": ["市场推广", "品牌建设", "用户获取", "合作伙伴"]
-    },
-    Role.COO: {
-        "name": "首席运营官 (COO)",
-        "description": "负责日常运营和流程优化",
-        "actions": ["运营优化", "成本控制", "流程改进", "供应链管理"]
-    }
-}
-
-# 默认轮次信息模板（用于初始化）
-DEFAULT_ROUND_TEMPLATES = {
-    1: "初创阶段：验证产品市场契合度",
-    2: "成长阶段：扩大用户基础和市场份额",
-    3: "扩张阶段：进入新市场和产品线",
-    4: "成熟阶段：优化运营和盈利能力",
-    5: "战略阶段：考虑IPO或并购机会"
-}
 
 
 # 数据模型
@@ -89,14 +88,16 @@ class GameRoom(BaseModel):
     created_at: datetime
     game_state: GameState = GameState.LOBBY
     current_round: int = 1
+    # 废弃
     startup_idea: Optional[str] = None
-    background: Optional[str] = None
+    background: Optional[str] = None  # 本轮游戏的背景
     dynamic_roles: Optional[Dict] = None  # 保存动态生成的角色定义
     game_result: Optional[Dict] = None
     round_actions: Dict[int, List[Dict]] = {}
     round_events: Dict[int, Dict] = {}  # 保存每轮的事件和选项
     round_private_messages: Dict[int, Dict] = {}  # 保存每轮的私人信息
     dynamic_round_info: Dict[int, str] = {}  # 保存动态生成的轮次信息
+    round_situation: Dict[int, str] = {}  # 保存每轮的情况
 
     def add_player(self, player: Player) -> bool:
         """添加玩家到房间"""
@@ -149,24 +150,25 @@ class GameRoom(BaseModel):
         """检查是否所有玩家都提交了当前轮次的行动"""
         online_players = self.get_online_players()
         submitted_players = set()
-        
+
         if round_num in self.round_actions:
             for action in self.round_actions[round_num]:
                 submitted_players.add(action.get("player"))
-        
+
         return len(submitted_players) == len(online_players)
 
     def add_round_action(self, round_num: int, action: Dict):
         """添加轮次行动"""
         if round_num not in self.round_actions:
             self.round_actions[round_num] = []
-        
+
         # 移除该玩家之前的行动（如果有）
         self.round_actions[round_num] = [
-            a for a in self.round_actions[round_num] 
+            a
+            for a in self.round_actions[round_num]
             if a.get("player") != action.get("player")
         ]
-        
+
         self.round_actions[round_num].append(action)
 
     def get_round_info(self, round_num: int) -> str:
@@ -174,35 +176,163 @@ class GameRoom(BaseModel):
         # 如果有动态生成的轮次信息，优先使用
         if round_num in self.dynamic_round_info:
             return self.dynamic_round_info[round_num]
-        
+
         # 否则使用默认模板
-        return DEFAULT_ROUND_TEMPLATES.get(round_num, f"第{round_num}轮：继续发展业务")
+        return ""
 
     def set_round_info(self, round_num: int, info: str):
         """设置指定轮次的动态信息"""
         self.dynamic_round_info[round_num] = info
 
+    def generate_background_from_ideas(self, player_ideas):
+        """根据所有玩家的想法生成背景"""
+        if not player_ideas:
+            raise ValueError("没有玩家想法")
+
+        # 将所有想法合并为一个字符串
+        combined_ideas = "\n".join([f"- {idea}" for idea in player_ideas if idea])
+
+        # 填充prompt模板
+        prompt = prompt_template.replace("{initial_idea}", combined_ideas)
+
+        try:
+            self.background = LLM().text(prompt, temperature=0.7)
+            return self.background
+        except Exception as e:
+            raise Exception(f"生成背景导入词失败: {str(e)}")
+
+    def generate_roles_from_background(self, background):
+        """根据游戏背景生成角色定义"""
+        if not background:
+            raise ValueError("背景故事不能为空")
+
+        # 填充prompt模板
+        prompt = role_generator.replace("{background}", background)
+
+        try:
+            # 使用LLM生成角色定义，直接获取JSON格式响应
+            role_definitions = LLM().json(prompt, temperature=0.7)
+
+            return role_definitions
+        except Exception as e:
+            raise Exception(f"生成角色定义失败: {str(e)}")
+
+    def generate_event(self, round_num):
+        # 填充prompt2模板
+        prompt = prompt2_template.replace("{background}", self.background or "")
+        if round_num in self.round_situation:
+            prompt = prompt.replace("{situation}", self.round_situation[round_num])
+        else:
+            prompt = prompt.replace("{situation}", "这是第一轮决策，暂无上一轮结果")
+
+        response_json = LLM().json(prompt, temperature=0.7)
+
+        # 添加调试信息
+        print(f"本轮事件的信息: {response_json}")
+
+        # 返回完整的事件数据，包含私人信息
+        return {
+            "situation": response_json.get("situation", ""),
+            "event": response_json.get("event", ""),
+            "private_messages": response_json.get("private_messages", {}),
+        }
+
     def generate_next_round_info(self, previous_round_result: Dict) -> str:
         """根据上一轮的结果生成下一轮的信息"""
         next_round = self.current_round + 1
-        
-        # 这里可以根据上一轮的结果动态生成下一轮的描述
-        # 目前先使用简单的逻辑，后续可以集成AI生成
+
+        # 根据上一轮的结果动态生成下一轮的描述
         if next_round <= 5:
-            base_template = DEFAULT_ROUND_TEMPLATES.get(next_round, f"第{next_round}轮：继续发展业务")
-            
-            # 根据上一轮结果调整描述
-            if previous_round_result and "success" in previous_round_result:
-                if previous_round_result["success"]:
-                    dynamic_info = f"{base_template}（基于上轮成功经验）"
+            base_template = ""
+
+            # 使用LLM生成基于决策影响的背景剧情
+            try:
+
+                llm = LLM()
+
+                # 构建提示词
+                prompt = f"""你是一个创业游戏的剧情生成器。请根据以下信息生成下一轮的背景剧情描述：
+
+基础轮次信息：{base_template}
+创业项目背景：{self.background or '未知项目'}
+当前轮次：第{next_round}轮
+
+上一轮决策结果：
+"""
+
+                # 分析上一轮的行动和结果
+                if previous_round_result and "actions" in previous_round_result:
+                    actions = previous_round_result["actions"]
+                    action_count = len(actions)
+
+                    prompt += f"- 团队行动数量：{action_count}个\n"
+                    prompt += f"- 决策成功状态：{'成功' if previous_round_result.get('success', False) else '需要改进'}\n"
+
+                    if actions:
+                        prompt += "- 具体行动：\n"
+                        for action in actions:
+                            role = action.get("role", "未知角色")
+                            action_desc = action.get("action", "未知行动")
+                            reason = action.get("reason", "无理由")
+                            prompt += f"  * {role}: {action_desc} (理由: {reason})\n"
                 else:
-                    dynamic_info = f"{base_template}（需要改进上轮问题）"
-            else:
-                dynamic_info = base_template
-            
+                    prompt += "- 上一轮缺乏具体行动数据\n"
+
+                prompt += f"""\n请生成一个50-80字的背景剧情描述，要求：
+1. 体现上一轮决策的影响和后果
+2. 为第{next_round}轮的挑战做铺垫
+3. 保持创业游戏的紧张感和真实感
+4. 语言简洁有力，富有代入感
+
+只返回剧情描述文本，不要其他内容。"""
+
+                # 调用LLM生成剧情
+                dynamic_info = llm.text(prompt, temperature=0.7)
+
+                # 清理生成的文本
+                dynamic_info = dynamic_info.strip()
+                if dynamic_info.startswith('"') and dynamic_info.endswith('"'):
+                    dynamic_info = dynamic_info[1:-1]
+
+                # 如果生成的内容太长，截取前80字
+                if len(dynamic_info) > 80:
+                    dynamic_info = dynamic_info[:77] + "..."
+
+            except Exception as e:
+                # 如果LLM生成失败，回退到原有逻辑
+                print(f"LLM生成剧情失败，使用默认逻辑: {e}")
+
+                # 分析上一轮的行动和结果
+                if previous_round_result and "actions" in previous_round_result:
+                    actions = previous_round_result["actions"]
+                    action_count = len(actions)
+
+                    # 根据行动数量和类型生成动态描述
+                    if action_count >= 3:  # 团队积极参与
+                        if previous_round_result.get("success", False):
+                            dynamic_info = (
+                                f"{base_template}（团队协作良好，继续保持优势）"
+                            )
+                        else:
+                            dynamic_info = (
+                                f"{base_template}（虽然团队积极，但需要调整策略）"
+                            )
+                    elif action_count >= 1:  # 部分参与
+                        dynamic_info = f"{base_template}（需要加强团队协作和执行力）"
+                    else:  # 缺乏行动
+                        dynamic_info = f"{base_template}（团队需要更积极的行动和决策）"
+                else:
+                    # 如果没有具体的行动数据，使用简化的成功/失败判断
+                    if previous_round_result and previous_round_result.get(
+                        "success", False
+                    ):
+                        dynamic_info = f"{base_template}（基于上轮成功经验）"
+                    else:
+                        dynamic_info = f"{base_template}（需要改进上轮问题）"
+
             self.set_round_info(next_round, dynamic_info)
             return dynamic_info
-        
+
         return f"第{next_round}轮：继续发展业务"
 
     def calculate_game_result(self) -> Dict:
@@ -213,12 +343,12 @@ class GameRoom(BaseModel):
         revenue = random.randint(10000, 1000000)
         market_share = random.randint(1, 25)
         team_size = random.randint(5, 100)
-        
+
         # 根据玩家行动调整分数
         total_actions = sum(len(actions) for actions in self.round_actions.values())
         score_bonus = min(total_actions * 2, 50)
         final_score = base_score + score_bonus
-        
+
         # 确定成功级别
         if final_score >= 90:
             success_level = "独角兽公司"
@@ -230,15 +360,15 @@ class GameRoom(BaseModel):
             success_level = "勉强生存"
         else:
             success_level = "创业失败"
-        
+
         # 计算玩家表现
         player_performance = self._calculate_player_performance()
-        
+
         # 生成玩家分数字典，确保前端兼容性
         player_scores = {}
         for perf in player_performance:
             player_scores[perf["player"]] = min(50 + perf["contribution_score"], 100)
-        
+
         return {
             "final_score": final_score,
             "success_level": success_level,
@@ -246,12 +376,12 @@ class GameRoom(BaseModel):
                 "user_growth": user_growth,
                 "revenue": revenue,
                 "market_share": market_share,
-                "team_size": team_size
+                "team_size": team_size,
             },
             "achievements": self._generate_achievements(final_score),
             "timeline": self._generate_timeline(),
             "player_performance": player_performance,
-            "playerScores": player_scores
+            "playerScores": player_scores,
         }
 
     def _generate_achievements(self, score: int) -> List[str]:
@@ -274,7 +404,7 @@ class GameRoom(BaseModel):
             {"round": 2, "event": "获得首批用户", "impact": "positive"},
             {"round": 3, "event": "完成A轮融资", "impact": "positive"},
             {"round": 4, "event": "市场竞争加剧", "impact": "negative"},
-            {"round": 5, "event": "战略合作达成", "impact": "positive"}
+            {"round": 5, "event": "战略合作达成", "impact": "positive"},
         ]
 
     def _calculate_player_performance(self) -> List[Dict]:
@@ -282,18 +412,21 @@ class GameRoom(BaseModel):
         performance = []
         for player in self.players:
             action_count = sum(
-                1 for round_actions in self.round_actions.values()
+                1
+                for round_actions in self.round_actions.values()
                 for action in round_actions
                 if action.get("player") == player.name
             )
-            
-            performance.append({
-                "player": player.name,
-                "role": player.role,
-                "actions_taken": action_count,
-                "contribution_score": min(action_count * 10, 50)
-            })
-        
+
+            performance.append(
+                {
+                    "player": player.name,
+                    "role": player.role,
+                    "actions_taken": action_count,
+                    "contribution_score": min(action_count * 10, 50),
+                }
+            )
+
         return performance
 
     def restart_game(self):
@@ -308,7 +441,7 @@ class GameRoom(BaseModel):
         self.round_events = {}  # 重置轮次事件
         self.round_private_messages = {}  # 重置私人信息
         self.dynamic_round_info = {}  # 重置动态轮次信息
-        
+
         # 重置玩家的游戏相关状态，但保留玩家名称和房主状态
         for player in self.players:
             player.role = None

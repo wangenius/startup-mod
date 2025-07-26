@@ -1,0 +1,26 @@
+[
+  {
+    "role": "CEO",
+    "name": "初始",
+    "hidden_task": "确保无人离职，并带领公司在五轮回合之后仍然存活。",
+    "skill": { "name": "强制覆盖投票", "uses_left": 1 }
+  },
+  {
+    "role": "CTO",
+    "name": "初始",
+    "hidden_task": "推动产品上线MVP版本，不被迫砍掉AI场景学习功能。",
+    "skill": { "name": "技术质检", "uses_left": 1 }
+  },
+  {
+    "role": "CMO",
+    "name": "初始",
+    "hidden_task": "将产品打入一个KOL圈层，实现一次爆款传播。",
+    "skill": { "name": "舆情操控", "uses_left": 1 }
+  },
+  {
+    "role": "COO",
+    "name": "初始",
+    "hidden_task": "在2轮内保障现金流不低于10%，避免紧急融资。",
+    "skill": { "name": "预算重构", "uses_left": 1 }
+  }
+]

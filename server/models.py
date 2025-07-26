@@ -132,12 +132,9 @@ class GameRoom(BaseModel):
         online_players = self.get_online_players()
         return all(p.role for p in online_players)
 
-    def get_selected_roles(self) -> List[Dict]:
+    def get_selected_roles(self) -> List[str]:
         """获取已选择的角色列表"""
-        return [
-            {"player": p.name, "role": p.role}
-            for p in self.players if p.role
-        ]
+        return [p.role for p in self.players if p.role]
 
     def all_players_submitted_actions(self, round_num: int) -> bool:
         """检查是否所有玩家都提交了当前轮次的行动"""

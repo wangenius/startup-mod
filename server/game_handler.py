@@ -123,17 +123,20 @@ class GameHandler:
         if not player:
             return
 
+        # 将角色ID转换为小写以匹配枚举值
+        role_lower = role.lower()
+        
         # 检查角色是否有效
-        if role not in Role.__members__.values():
+        if role_lower not in Role.__members__.values():
             return
 
         # 检查角色是否已被选择
-        role_taken = any(p.role == role for p in room.players if p.name != player_name)
+        role_taken = any(p.role == role_lower for p in room.players if p.name != player_name)
         if role_taken:
             return
 
         # 设置玩家角色
-        player.role = Role(role)
+        player.role = Role(role_lower)
         logger.info(f"玩家 {player_name} 选择角色: {role}")
         
         # 广播角色选择

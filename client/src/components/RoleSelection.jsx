@@ -55,9 +55,9 @@ function RoleSelection({ players, playerName, onRoleSelect, selectedRoles }) {
           {/* 角色选择 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {ROLES.map((role) => {
-              const isSelected = selectedRole === role.id || currentPlayer?.role === role.id;
-              const isOccupied = selectedRoles.includes(role.id) && !isSelected;
-              const occupiedBy = players.find(p => p.role === role.id);
+              const isSelected = selectedRole === role.id || currentPlayer?.role === role.id.toLowerCase();
+              const isOccupied = selectedRoles.includes(role.id.toLowerCase()) && !isSelected;
+              const occupiedBy = players.find(p => p.role === role.id.toLowerCase());
               
               return (
                 <div
@@ -103,7 +103,7 @@ function RoleSelection({ players, playerName, onRoleSelect, selectedRoles }) {
             <h2 className="text-xl font-semibold mb-4 text-gray-700">👥 玩家状态</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {players.map((player, index) => {
-                const playerRole = ROLES.find(r => r.id === player.role);
+                const playerRole = ROLES.find(r => r.id.toLowerCase() === player.role);
                 return (
                   <div
                     key={index}

@@ -23,6 +23,18 @@ function GamePlay({
   const [selectionTimeLeft, setSelectionTimeLeft] = useState(20); // 选择时间20秒
   const [showPrivateModal, setShowPrivateModal] = useState(false); // 控制私人信息模态框显示
 
+  // 根据角色名称确定对应的图片
+  const getRoleImage = (role) => {
+    const roleImageMap = {
+      "CEO": "/image (2).png",
+      "CTO": "/image (3).png",
+      "CMO": "/image (4).png",
+      "COO": "/image (1).png",
+      "CPO": "/image (5).png",
+    };
+    return roleImageMap[role.toUpperCase()] || "/image (2).png"; // 默认使用CEO图片
+  };
+
   console.log(roundEvent);
 
   useEffect(() => {
@@ -128,7 +140,7 @@ function GamePlay({
           <div className="w-20 h-20 absolute left-[55px] top-[36px] bg-gray-200/50 blur-[50px]" />
           <img
             className="w-40 h-40"
-            src="./image (1).png"
+            src={getRoleImage(playerRole)}
             alt="Player Avatar"
           />
           <div className="absolute bottom-0 right-0 text-right text-white text-sm font-normal font-['Space_Grotesk'] bg-black/30 px-2 py-1 rounded-lg backdrop-blur-sm">
@@ -174,7 +186,7 @@ function GamePlay({
         <div className="w-20 h-20 left-[55px] top-[36px] absolute bg-gray-200/50 blur-[50px]" />
         <img
           className="w-40 h-40 left-0 top-0 absolute"
-          src="./image (1).png"
+          src={getRoleImage(playerRole)}
         />
         <div className="w-16 h-10 left-[92px] top-[122px] absolute text-right justify-start text-white text-sm font-normal font-['Space_Grotesk']">
           {playerName}
@@ -321,7 +333,7 @@ function GamePlay({
         <div className="w-20 h-20 left-[55px] top-[36px] absolute bg-gray-200/50 blur-[50px]" />
         <img
           className="w-40 h-40 left-0 top-0 absolute"
-          src="./image (1).png"
+          src={getRoleImage(playerRole)}
         />
         <div className="w-16 h-10 left-[92px] top-[122px] absolute text-right justify-start text-white text-sm font-normal font-['Space_Grotesk']">
           {playerName}
@@ -411,7 +423,7 @@ function GamePlay({
               <div className="w-20 h-20 absolute left-[55px] top-[36px] bg-amber-400/20 blur-[50px]"></div>
               <img
                 className="w-40 h-40"
-                src="./image (1).png"
+                src={getRoleImage(playerRole)}
                 alt="Player Avatar"
               />
               <div className="absolute bottom-0 right-0 text-right text-white text-sm font-normal font-['Space_Grotesk'] bg-black/50 px-3 py-2 rounded-lg backdrop-blur-sm border border-amber-500/30">

@@ -1,5 +1,17 @@
 function LoadingPage({ playerName, roleName }) {
   const displayName = roleName || playerName || "林燃";
+  
+  // 根据角色名称确定对应的图片
+  const getRoleImage = (role) => {
+    const roleImageMap = {
+      'CEO': '/CEO.png',
+      'CTO': '/CTO.png',
+      'CMO': '/CMO.png',
+      'COO': '/COO.png',
+      'CPO': '/CPO.png'
+    };
+    return roleImageMap[role] || '/CEO.png'; // 默认使用CEO图片
+  };
   return (
     <div className="w-96 h-[874px] relative bg-black overflow-hidden">
       <div className="w-72 h-48 left-[62px] top-[297px] absolute bg-white/0 blur-lg" />
@@ -29,7 +41,7 @@ function LoadingPage({ playerName, roleName }) {
       <div className="w-0.5 h-[3px] left-[61px] top-[770px] absolute bg-slate-300 rounded-[1px]" />
       <img
         className="w-72 h-48 left-[51px] top-[139px] absolute"
-        src="/CEO.png"
+        src={getRoleImage(roleName)}
       />
       <div className="left-[311px] top-[297px] absolute text-right justify-end text-white text-sm font-medium font-['Space_Grotesk'] [text-shadow:_0px_2px_1px_rgb(0_0_0_/_0.25)]">
         {displayName}

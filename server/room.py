@@ -37,6 +37,13 @@ with open(
 ) as f:
     prompt3_template = f.read()
 
+with open(
+    os.path.join(os.path.dirname(__file__), "prompt", "prompt4.txt"),
+    "r",
+    encoding="utf-8",
+) as f:
+    prompt4_template = f.read()
+
 
 # 枚举定义
 class MessageType(str, Enum):
@@ -290,6 +297,13 @@ class GameRoom(BaseModel):
         for perf in player_performance:
             player_scores[perf["player"]] = min(50 + perf["contribution_score"], 100)
 
+        # 生成最终报告
+        try:
+            final_report = self.generate_final_report()
+        except Exception as e:
+            print(f"生成最终报告失败: {e}")
+            final_report = "报告生成失败，请稍后重试。"
+
         return {
             "final_score": final_score,
             "success_level": success_level,
@@ -303,6 +317,7 @@ class GameRoom(BaseModel):
             "timeline": self._generate_timeline(),
             "player_performance": player_performance,
             "playerScores": player_scores,
+            "final_report": final_report,
         }
 
     def _generate_achievements(self, score: int) -> List[str]:
@@ -349,6 +364,58 @@ class GameRoom(BaseModel):
             )
 
         return performance
+
+    def generate_final_report(self) -> str:
+        """使用prompt4模板生成最终的创业报告"""
+        # 获取初始创业想法
+        initial_ideas = [player.startup_idea for player in self.players if player.startup_idea]
+        combined_ideas = "\n".join([f"- {idea}" for idea in initial_ideas]) if initial_ideas else "创业想法"
+        
+        # 获取每轮的分析结果
+        round_outputs = []
+        for round_num in range(1, 6):
+            if round_num in self.round_events:
+                event_data = self.round_events[round_num]
+                situation = event_data.get('situation', '')
+                event = event_data.get('event', '')
+                round_output = f"第{round_num}轮情况：{situation}\n事件：{event}"
+                
+                # 添加该轮的玩家行动
+                if round_num in self.round_actions:
+                    actions = self.round_actions[round_num]
+                    action_summary = "\n".join([f"{action.get('player')}({action.get('role', '')})：{action.get('action', '')}" for action in actions])
+                    round_output += f"\n玩家决策：\n{action_summary}"
+                
+                round_outputs.append(round_output)
+            else:
+                round_outputs.append(f"第{round_num}轮：暂无数据")
+        
+        # 填充prompt4模板
+        prompt = prompt4_template.replace("{initial_idea}", combined_ideas)
+        prompt = prompt.replace("{output1}", round_outputs[0] if len(round_outputs) > 0 else "暂无数据")
+        prompt = prompt.replace("{output2}", round_outputs[1] if len(round_outputs) > 1 else "暂无数据")
+        prompt = prompt.replace("{output3}", round_outputs[2] if len(round_outputs) > 2 else "暂无数据")
+        prompt = prompt.replace("{output4}", round_outputs[3] if len(round_outputs) > 3 else "暂无数据")
+        prompt = prompt.replace("{output5}", round_outputs[4] if len(round_outputs) > 4 else "暂无数据")
+        
+        # 替换玩家姓名占位符
+        for player in self.players:
+            if player.role == Role.CEO:
+                prompt = prompt.replace("[玩家姓名]", player.name)
+                break
+        
+        # 替换其他角色的玩家姓名
+        role_mapping = {Role.CTO: "CTO", Role.CMO: "CMO", Role.COO: "COO"}
+        for player in self.players:
+            if player.role and player.role in role_mapping:
+                role_name = role_mapping[player.role]
+                prompt = prompt.replace(f"{role_name}：[玩家姓名]", f"{role_name}：{player.name}")
+        
+        try:
+            final_report = LLM().text(prompt, temperature=0.7)
+            return final_report
+        except Exception as e:
+            raise Exception(f"生成最终报告失败: {str(e)}")
 
     def restart_game(self):
         """重新开始游戏，重置游戏状态但保留玩家"""

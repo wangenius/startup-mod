@@ -10,7 +10,20 @@ function GameResult({ gameResult, players, onRestartGame }) {
     return { level: '失败', color: 'text-red-600', icon: '❌' };
   };
 
-  const successInfo = getSuccessLevel(gameResult.finalScore);
+  // 添加空值检查，防止页面刷新时 gameResult 为 null
+  if (!gameResult) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-xl p-8 text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-2">加载游戏结果中...</h2>
+          <p className="text-gray-600">请稍候，正在获取游戏数据</p>
+        </div>
+      </div>
+    );
+  }
+
+  const successInfo = getSuccessLevel(gameResult.finalScore || 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -23,10 +36,10 @@ function GameResult({ gameResult, players, onRestartGame }) {
             {successInfo.level}
           </h2>
           <div className="text-3xl font-bold text-gray-700 mb-4">
-            最终得分: {gameResult.finalScore}/100
+            最终得分: {gameResult.finalScore || 0}/100
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            {gameResult.summary}
+            {gameResult.summary || '游戏已完成，感谢您的参与！'}
           </p>
         </div>
 

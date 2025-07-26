@@ -168,6 +168,8 @@ class WebSocketHandler:
                 await game_handler.handle_game_action(player_name, data)
             elif message_type == "continue_next_round":
                 await game_handler.handle_continue_next_round(player_name)
+            elif message_type == "restart_game":
+                await game_handler.handle_restart_game(player_name)
             else:
                 logger.warning(f"未知消息类型: {message_type}")
 

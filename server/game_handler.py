@@ -291,6 +291,43 @@ class GameHandler:
             }
         )
 
+    @staticmethod
+    async def handle_restart_game(player_name: str):
+        """处理游戏重新开始"""
+        room_id = connection_manager.get_player_room(player_name)
+        if not room_id:
+            return
+
+        room = room_manager.get_room(room_id)
+        if not room:
+            return
+
+        player = room.get_player(player_name)
+        if not player or not player.is_host:
+            return
+
+        # 只有房主可以重新开始游戏
+        room.restart_game()
+        logger.info(f"房间 {room_id} 游戏重新开始")
+        
+        await connection_manager.broadcast_to_room(
+            room_id,
+            {
+                "type": MessageType.GAME_RESTART,
+                "data": {
+                    "players": [
+                        {
+                            "name": p.name, 
+                            "is_online": p.is_online,
+                            "role": p.role,
+                            "startup_idea": p.startup_idea,
+                            "isHost": p.is_host
+                        } for p in room.players
+                    ],
+                }
+            }
+        )
+
 
 # 全局游戏处理器实例
 game_handler = GameHandler()

@@ -17,6 +17,7 @@ class MessageType(str, Enum):
     ACTION_SUBMITTED = "action_submitted"
     ROUND_COMPLETE = "round_complete"
     GAME_COMPLETE = "game_complete"
+    GAME_RESTART = "game_restart"
     CONNECTION_SUCCESS = "connection_success"
 
 
@@ -241,3 +242,17 @@ class GameRoom(BaseModel):
             })
         
         return performance
+
+    def restart_game(self):
+        """重新开始游戏，重置游戏状态但保留玩家"""
+        # 重置游戏状态
+        self.game_state = GameState.LOBBY
+        self.current_round = 1
+        self.game_result = None
+        self.round_actions = {}
+        
+        # 重置玩家的游戏相关状态，但保留玩家名称和房主状态
+        for player in self.players:
+            player.role = None
+            player.actions = []
+            # 保留 startup_idea，这样玩家不需要重新输入创业想法

@@ -310,6 +310,12 @@ function App() {
         saveGameState(playerName, currentRoom, GAME_STATES.RESULT);
         addMessage("🎉 游戏结束");
         break;
+      case "game_restart":
+        // 处理游戏重新开始消息
+        resetGameState();
+        setPlayers(message.data.players);
+        addMessage("🔄 房主重新开始了游戏");
+        break;
       default:
         addMessage(`收到消息: ${JSON.stringify(message)}`);
     }
@@ -433,21 +439,38 @@ function App() {
 
   // 处理重新开始游戏
   const handleRestartGame = () => {
-    setGameState(GAME_STATES.WELCOME);
-    setCurrentRoom("");
-    setPlayers([]);
+    if (wsRef.current && wsConnected) {
+      // 发送重新开始游戏的消息到服务器
+      wsRef.current.send(
+        JSON.stringify({
+          type: "restart_game"
+        })
+      );
+    } else {
+      // 如果没有连接，直接在客户端重置状态
+      resetGameState();
+    }
+  };
+
+  // 重置游戏状态的辅助函数
+  const resetGameState = () => {
+    // 回到游戏等待室，而不是完全退出
+    setGameState(GAME_STATES.LOBBY);
+    // 保持房间连接，只重置游戏状态
     setCurrentRound(1);
     setRoundInfo("");
     setPlayerActions([]);
     setGameResult(null);
     setSelectedRoles([]);
     setWaitingForPlayers(false);
-    setMessages([]);
-    clearSavedState();
-    if (wsRef.current) {
-      wsRef.current.close();
-    }
-    setWsConnected(false);
+    setCompletedRound(null);
+    setCompletedRoundActions([]);
+    
+    // 保存新的游戏状态
+    saveGameState(playerName, currentRoom, GAME_STATES.LOBBY);
+    
+    // 添加重新开始的消息
+    addMessage("🔄 游戏已重新开始，回到等待室");
   };
 
   // 根据游戏状态渲染不同组件

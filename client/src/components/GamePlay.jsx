@@ -139,11 +139,8 @@ function GamePlay({
                         }`}
                         onClick={() => setSelectedAction(action.id)}
                       >
-                        <div className="font-medium text-gray-800">
-                          {action.name}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          {action.description}
+                        <div className="text-gray-600 mt-1">
+                          {action.name}: {action.description}
                         </div>
                       </div>
                     ))

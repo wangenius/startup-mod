@@ -1,4 +1,40 @@
-function GameResult() {}
+import { useState, useEffect } from 'react';
+
+function GameResult() {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    // 5秒后自动切换到Page2
+    const timer = setTimeout(() => {
+      setCurrentPage(2);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleNextPage = () => {
+    if (currentPage === 1) {
+      setCurrentPage(2);
+    }
+  };
+
+  return (
+    <div className="relative">
+      {currentPage === 1 && <Page1 />}
+      {currentPage === 2 && <Page2 />}
+      
+      {/* 可选：添加手动切换按钮 */}
+      {currentPage === 1 && (
+        <button 
+          onClick={handleNextPage}
+          className="absolute bottom-4 right-4 bg-white text-black px-4 py-2 rounded hover:bg-gray-200 transition-colors"
+        >
+          下一页
+        </button>
+      )}
+    </div>
+  );
+}
 
 function Page1() {
   return (

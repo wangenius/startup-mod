@@ -1,71 +1,75 @@
-import { useState } from 'react';
+import { useState, useRef } from "react";
 
-function RoomManager({ playerName, onRoomAction }) {
-  const [roomId, setRoomId] = useState('');
+function RoomManager({ onRoomAction }) {
+  const [teamCode, setTeamCode] = useState(["", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const inputRefs = useRef([]);
 
-  const handleCreateRoom = async () => {
-    if (!roomId.trim()) return;
-    setLoading(true);
-    try {
-      await onRoomAction('create', roomId.trim());
-    } finally {
-      setLoading(false);
+  const handleCodeChange = (index, value) => {
+    if (value.length <= 1) {
+      const newCode = [...teamCode];
+      newCode[index] = value;
+      setTeamCode(newCode);
+      
+      // 自动聚焦到下一个输入框
+      if (value && index < 3) {
+        inputRefs.current[index + 1]?.focus();
+      }
     }
   };
 
+  const handleKeyDown = (index, e) => {
+    // 处理退格键，自动聚焦到上一个输入框
+    if (e.key === 'Backspace' && !teamCode[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+
+
   const handleJoinRoom = async () => {
-    if (!roomId.trim()) return;
+    const code = teamCode.join("");
+    if (!code.trim()) return;
     setLoading(true);
     try {
-      await onRoomAction('join', roomId.trim());
+      await onRoomAction("join", code);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">🎮 游戏大厅</h1>
-          <p className="text-gray-600">欢迎，{playerName}！</p>
-        </div>
-        
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              房间ID
-            </label>
-            <input
-              type="text"
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="输入房间ID"
-              disabled={loading}
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={handleCreateRoom}
-              disabled={!roomId.trim() || loading}
-              className="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-            >
-              {loading ? '创建中...' : '🏗️ 创建房间'}
-            </button>
-            
-            <button
-              onClick={handleJoinRoom}
-              disabled={!roomId.trim() || loading}
-              className="bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-            >
-              {loading ? '加入中...' : '🚪 加入房间'}
-            </button>
-          </div>
-        </div>
+    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
+      <div className="left-[63px] top-[398px] absolute inline-flex justify-start items-center gap-3">
+        {teamCode.map((code, index) => (
+          <input
+            key={index}
+            ref={(el) => (inputRefs.current[index] = el)}
+            type="text"
+            value={code}
+            onChange={(e) => handleCodeChange(index, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(index, e)}
+            className="w-14 h-20 border-[0.40px] border-white/60 bg-transparent text-white text-center text-xl focus:outline-none focus:border-white"
+            maxLength={1}
+            disabled={loading}
+          />
+        ))}
       </div>
+      <div className="left-[139px] top-[347px] absolute text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+        输入团队暗号
+      </div>
+      <div className="p-1.5 left-[99px] top-[710px] absolute bg-zinc-300/80 rounded-[20px] shadow-[0px_1.5px_0px_0px_rgba(255,255,255,0.10)] shadow-[inset_0px_0px_2px_0px_rgba(0,0,0,0.08)] inline-flex justify-start items-start gap-2.5">
+        <button
+          onClick={handleJoinRoom}
+          disabled={loading || !teamCode.join("").trim()}
+          className="px-14 py-5 rounded-2xl shadow-[0px_2.767256498336792px_2.2138051986694336px_0px_rgba(0,0,0,0.12)] shadow-[0px_6.650102138519287px_5.32008171081543px_0px_rgba(0,0,0,0.13)] shadow-[0px_12.521552085876465px_10.017241477966309px_0px_rgba(0,0,0,0.14)] shadow-[0px_22.3363094329834px_17.869047164916992px_0px_rgba(0,0,0,0.14)] shadow-[0px_41.777610778808594px_33.422088623046875px_0px_rgba(0,0,0,0.15)] shadow-[0px_100px_80px_0px_rgba(0,0,0,0.15)] shadow-[0px_3px_3px_0px_rgba(0,0,0,0.14)] shadow-[0px_2.767256498336792px_2.2138051986694336px_0px_rgba(0,0,0,0.12)] shadow-[inset_0px_-3px_0px_0px_rgba(8,8,8,1.00)] shadow-[inset_0px_1px_0px_0px_rgba(255,255,255,0.30)] flex justify-center items-center gap-5 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+        >
+          <div className="text-center justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-none">
+            {loading ? "进入中..." : "加入房间"}
+          </div>
+        </button>
+      </div>
+
     </div>
   );
 }

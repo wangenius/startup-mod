@@ -10,9 +10,11 @@ import RoomManager from "./components/RoomManager";
 import RoundResult from "./components/RoundResult";
 import WelcomePage from "./components/WelcomePage";
 import EventGeneration from "./components/EventGeneration";
+import { InitialPage } from "./page/InitialPage";
 
 // 游戏状态枚举
 const GAME_STATES = {
+  INITIAL: "initial",
   WELCOME: "welcome",
   ROOM_SELECTION: "room_selection",
   LOBBY: "lobby",
@@ -49,7 +51,7 @@ console.log("服务器配置:", { API_BASE, WS_BASE });
 
 function App() {
   // 基础状态
-  const [gameState, setGameState] = useState(GAME_STATES.WELCOME);
+  const [gameState, setGameState] = useState(GAME_STATES.INITIAL);
   const [playerName, setPlayerName] = useState("");
   const [currentRoom, setCurrentRoom] = useState("");
   const [players, setPlayers] = useState([]);
@@ -398,6 +400,11 @@ function App() {
     }
   };
 
+  // 处理InitialPage点击
+  const handleInitialPageClick = () => {
+    setGameState(GAME_STATES.WELCOME);
+  };
+
   // 处理玩家名称设置
   const handlePlayerNameSet = (name) => {
     setPlayerName(name);
@@ -408,20 +415,13 @@ function App() {
   // 处理房间操作
   const handleRoomAction = async (action, roomId) => {
     try {
-      const apiUrl = `${API_BASE}/rooms/${action}`;
-      addMessage(`正在${action === "create" ? "创建" : "加入"}房间: ${apiUrl}`);
+      const apiUrl = `${API_BASE}/rooms/create`;
+      addMessage(`正在进入房间: ${roomId}`);
 
-      let requestBody = {};
-      if (action === "create") {
-        // 创建房间不需要参数
-        requestBody = {};
-      } else {
-        // 加入房间需要房间ID和玩家名称
-        requestBody = {
-          room_id: roomId,
-          player_name: playerName,
-        };
-      }
+      const requestBody = {
+        room_id: roomId,
+        player_name: playerName,
+      };
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -433,26 +433,14 @@ function App() {
 
       const data = await response.json();
 
-      if (action === "create") {
-        if (data.room_id) {
-          addMessage(`房间 ${data.room_id} 创建成功`);
-          connectWebSocket(playerName, data.room_id);
-        } else {
-          addMessage("创建房间失败", "error");
-        }
+      if (data.success) {
+        addMessage(`成功进入房间 ${roomId}`);
+        connectWebSocket(playerName, roomId);
       } else {
-        if (data.success) {
-          addMessage(`房间 ${roomId} 加入成功`);
-          connectWebSocket(playerName, roomId);
-        } else {
-          addMessage(data.message || "加入房间失败", "error");
-        }
+        addMessage(data.message || "进入房间失败", "error");
       }
     } catch (error) {
-      addMessage(
-        `${action === "create" ? "创建" : "加入"}房间失败: ${error.message}`,
-        "error"
-      );
+      addMessage(`进入房间失败: ${error.message}`, "error");
     }
   };
 
@@ -574,6 +562,9 @@ function App() {
   // 根据游戏状态渲染不同组件
   const renderCurrentState = () => {
     switch (gameState) {
+      case GAME_STATES.INITIAL:
+        return <InitialPage onClick={handleInitialPageClick} />;
+
       case GAME_STATES.WELCOME:
         return <WelcomePage onPlayerNameSet={handlePlayerNameSet} />;
 

@@ -340,6 +340,19 @@ class GameHandler:
         """处理轮次完成"""
         logger.info(f"房间 {room_id} 第{room.current_round}轮完成")
 
+        # 先向前端发送加载状态通知
+        room.game_state = GameState.LOADING
+        await connection_manager.broadcast_to_room(
+            room_id,
+            {
+                "type": MessageType.ROUND_LOADING,
+                "data": {
+                    "round": room.current_round,
+                    "message": f"AI正在处理第{room.current_round}轮结果，请稍候...",
+                },
+            },
+        )
+
         # 根据当前轮次的结果生成下一轮的动态信息
         if room.current_round < 5:
             try:
@@ -351,7 +364,8 @@ class GameHandler:
             except Exception as e:
                 logger.error(f"房间 {room_id} 生成下一轮动态信息失败: {str(e)}")
 
-        # 广播轮次完成
+        # 恢复游戏状态并广播轮次完成
+        room.game_state = GameState.PLAYING
         await connection_manager.broadcast_to_room(
             room_id,
             {"type": MessageType.ROUND_COMPLETE, "data": {"round": room.current_round}},

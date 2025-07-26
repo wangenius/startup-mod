@@ -220,10 +220,27 @@ class GameRoom(BaseModel):
     def generate_event(self, round_num):
         # 填充prompt2模板
         prompt = prompt2_template.replace("{background}", self.background or "")
+        
+        # 替换initial_idea占位符
+        # 从玩家的startup_idea中获取初始想法
+        initial_ideas = [player.startup_idea for player in self.players if player.startup_idea]
+        combined_ideas = "\n".join([f"- {idea}" for idea in initial_ideas]) if initial_ideas else "创业想法"
+        prompt = prompt.replace("{initial_idea}", combined_ideas)
+        
+        # 替换situation/previous_output占位符
         if round_num in self.round_situation:
-            prompt = prompt.replace("{situation}", self.round_situation[round_num])
+            # 如果round_situation是字典，需要转换为字符串
+            situation_data = self.round_situation[round_num]
+            if isinstance(situation_data, dict):
+                situation_str = f"第{situation_data.get('round', round_num-1)}轮的决策结果：{situation_data.get('impact', '上一轮的决策产生了影响...')}"
+            else:
+                situation_str = str(situation_data)
+            prompt = prompt.replace("{situation}", situation_str)
+            prompt = prompt.replace("{previous_output}", situation_str)
         else:
-            prompt = prompt.replace("{situation}", "这是第一轮决策，暂无上一轮结果")
+            default_situation = "这是第一轮决策，暂无上一轮结果"
+            prompt = prompt.replace("{situation}", default_situation)
+            prompt = prompt.replace("{previous_output}", default_situation)
 
         response_json = LLM().json(prompt, temperature=0.7)
 

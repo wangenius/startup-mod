@@ -29,21 +29,34 @@ async def root():
     return {"message": "创业模拟器游戏服务器正在运行"}
 
 
-@app.post("/rooms/create")
-async def create_room():
-    import uuid
-
-    room_id = str(uuid.uuid4())[:8]
-    try:
-        room_manager.create_room(room_id)
-        logger.info(f"Created room: {room_id}")
-        return {"room_id": room_id}
-    except Exception as e:
-        logger.error(f"Error creating room: {e}")
-        raise HTTPException(status_code=500, detail="创建房间失败")
-
-
 from pydantic import BaseModel
+
+
+class CreateRoomRequest(BaseModel):
+    room_id: str
+    player_name: str
+
+
+@app.post("/rooms/create")
+async def create_room(request: CreateRoomRequest):
+    try:
+        # 检查房间是否已存在
+        existing_room = room_manager.get_room(request.room_id)
+        if existing_room:
+            # 房间已存在，直接加入
+            room = room_manager.join_room(request.player_name, request.room_id)
+            logger.info(f"Player {request.player_name} joined existing room: {request.room_id}")
+        else:
+            # 房间不存在，创建新房间
+            room = room_manager.create_room(request.room_id)
+            # 创建者自动加入房间
+            room = room_manager.join_room(request.player_name, request.room_id)
+            logger.info(f"Created room: {request.room_id} and added player: {request.player_name}")
+        
+        return {"room_id": request.room_id, "success": True}
+    except Exception as e:
+        logger.error(f"Error creating/joining room: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 class JoinRoomRequest(BaseModel):

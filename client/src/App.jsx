@@ -58,22 +58,28 @@ function App() {
   const wsRef = useRef(null);
 
   // 检查房间状态并重连
-  const reconnectToRoom = async (playerName, roomId) => {
+  const reconnectToRoom = async (playerName, roomId, savedGameState) => {
     try {
       // 先检查房间是否存在
       const response = await fetch(`${API_BASE}/rooms/${roomId}/status`);
       if (response.ok) {
-        addMessage(`房间 ${roomId} 存在，正在重连...`);
+        const roomStatus = await response.json();
+        addMessage(`房间 ${roomId} 存在，玩家数: ${roomStatus.player_count}`);
+        
+        // 设置游戏状态为保存的状态
+        setGameState(savedGameState);
+        
+        // 建立WebSocket连接
         connectWebSocket(playerName, roomId);
       } else {
-        addMessage(`房间 ${roomId} 不存在，清除保存的状态`, "error");
+        addMessage(`房间 ${roomId} 不存在，返回房间选择页面`, "error");
         clearSavedState();
-        setGameState(GAME_STATES.WELCOME);
+        setGameState(GAME_STATES.ROOM_SELECTION);
       }
     } catch (error) {
-      addMessage(`检查房间状态失败: ${error.message}`, "error");
+      addMessage(`检查房间状态失败: ${error.message}，返回房间选择页面`, "error");
       clearSavedState();
-      setGameState(GAME_STATES.WELCOME);
+      setGameState(GAME_STATES.ROOM_SELECTION);
     }
   };
 
@@ -85,22 +91,23 @@ function App() {
     
     if (savedPlayerName) {
       setPlayerName(savedPlayerName);
+      addMessage(`欢迎回来, ${savedPlayerName}!`);
       
       if (savedRoomId && savedGameState) {
+        // 用户之前在房间中，尝试恢复状态
         setCurrentRoom(savedRoomId);
-        setGameState(savedGameState);
-        
-        addMessage(`恢复会话: 玩家 ${savedPlayerName}, 房间 ${savedRoomId}`);
+        addMessage(`正在恢复房间状态: ${savedRoomId}`);
         
         // 延迟重连，确保其他函数已定义
         const reconnectTimer = setTimeout(() => {
-          reconnectToRoom(savedPlayerName, savedRoomId);
-        }, 1000);
+          reconnectToRoom(savedPlayerName, savedRoomId, savedGameState);
+        }, 500);
         
         return () => clearTimeout(reconnectTimer);
       } else {
-        // 只有玩家名称，跳转到房间选择页面
+        // 只有玩家名称，直接跳转到房间选择页面
         setGameState(GAME_STATES.ROOM_SELECTION);
+        addMessage(`请选择或创建房间`);
       }
     }
   }, []);
@@ -165,9 +172,61 @@ function App() {
       if (message.type === "connection_success") {
         setWsConnected(true);
         setCurrentRoom(roomId);
-        setGameState(GAME_STATES.LOBBY);
-        saveGameState(playerName, roomId, GAME_STATES.LOBBY);
-        addMessage(`🎮 成功连接并加入房间: ${roomId}`);
+        
+        const { is_reconnect, game_state, current_round, players, selected_roles, round_info, player_actions, game_result } = message.data;
+        
+        // 更新玩家列表
+        setPlayers(players || []);
+        
+        if (is_reconnect) {
+          // 重连时恢复所有游戏状态
+          addMessage(`🔄 重新连接到房间: ${roomId}`);
+          
+          // 根据服务器返回的游戏状态设置前端状态
+          switch (game_state) {
+            case 'lobby':
+              setGameState(GAME_STATES.LOBBY);
+              break;
+            case 'role_selection':
+              setGameState(GAME_STATES.ROLE_SELECTION);
+              if (selected_roles) {
+                setSelectedRoles(selected_roles);
+              }
+              break;
+            case 'playing':
+              setGameState(GAME_STATES.PLAYING);
+              setCurrentRound(current_round || 1);
+              if (round_info) {
+                setRoundInfo(round_info);
+              }
+              if (player_actions) {
+                setPlayerActions(player_actions);
+              }
+              break;
+            case 'finished':
+              setGameState(GAME_STATES.RESULT);
+              if (game_result) {
+                setGameResult(game_result);
+              }
+              break;
+            default:
+              setGameState(GAME_STATES.LOBBY);
+          }
+          
+          // 保存恢复的状态
+           const currentGameState = {
+             'lobby': GAME_STATES.LOBBY,
+             'role_selection': GAME_STATES.ROLE_SELECTION,
+             'playing': GAME_STATES.PLAYING,
+             'finished': GAME_STATES.RESULT
+           }[game_state] || GAME_STATES.LOBBY;
+           saveGameState(playerName, roomId, currentGameState);
+        } else {
+          // 新加入房间
+          setGameState(GAME_STATES.LOBBY);
+          saveGameState(playerName, roomId, GAME_STATES.LOBBY);
+          addMessage(`🎮 成功加入房间: ${roomId}`);
+        }
       } else {
         handleWebSocketMessage(message);
       }
@@ -190,17 +249,27 @@ function App() {
 
   const handleWebSocketMessage = (message) => {
     switch (message.type) {
-      case "player_join":
-        addMessage(`🎮 ${message.data.player_name} 加入房间`);
+      case "player_join": {
+        // 更新玩家列表，同时保持当前游戏状态
         setPlayers(message.data.players);
+        
+        // 如果是当前玩家重连，不显示加入消息
+        if (message.data.player_name !== playerName) {
+          addMessage(`🎮 ${message.data.player_name} 加入房间`);
+        }
         break;
+      }
       case "player_leave":
         addMessage(`👋 ${message.data.player_name} 离开房间`);
         setPlayers(message.data.players);
         break;
+      case "ideas_complete":
+        addMessage("💡 所有创业想法已提交完成，可以开始游戏了！");
+        setPlayers(message.data.players);
+        break;
       case "game_start":
         setGameState(GAME_STATES.ROLE_SELECTION);
-        saveGameState(null, null, GAME_STATES.ROLE_SELECTION);
+        saveGameState(playerName, currentRoom, GAME_STATES.ROLE_SELECTION);
         addMessage("🚀 游戏开始，请选择角色");
         break;
       case "role_selected":
@@ -211,7 +280,7 @@ function App() {
         setGameState(GAME_STATES.PLAYING);
         setCurrentRound(1);
         setRoundInfo(message.data.roundInfo);
-        saveGameState(null, null, GAME_STATES.PLAYING);
+        saveGameState(playerName, currentRoom, GAME_STATES.PLAYING);
         addMessage("🎯 所有角色已选择，游戏正式开始");
         break;
       case "round_start":
@@ -230,7 +299,7 @@ function App() {
       case "game_complete":
         setGameState(GAME_STATES.RESULT);
         setGameResult(message.data.result);
-        saveGameState(null, null, GAME_STATES.RESULT);
+        saveGameState(playerName, currentRoom, GAME_STATES.RESULT);
         addMessage("🎉 游戏结束");
         break;
       default:

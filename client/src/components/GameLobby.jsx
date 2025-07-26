@@ -11,7 +11,7 @@ function GameLobby({ roomId, players, playerName, onStartupIdeaSubmit, onStartGa
     }
   };
 
-  const allPlayersReady = players.length >= 2 && players.every(p => p.ideaSubmitted);
+  const allPlayersReady = players.length >= 2 && players.every(p => p.startup_idea);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -41,9 +41,9 @@ function GameLobby({ roomId, players, playerName, onStartupIdeaSubmit, onStartGa
                       )}
                     </div>
                     <div className={`text-sm ${
-                      player.ideaSubmitted ? 'text-green-600' : 'text-gray-400'
+                      player.startup_idea ? 'text-green-600' : 'text-gray-400'
                     }`}>
-                      {player.ideaSubmitted ? '✅ 已提交想法' : '⏳ 等待中'}
+                      {player.startup_idea ? '✅ 已提交想法' : '⏳ 等待中'}
                     </div>
                   </div>
                 ))}

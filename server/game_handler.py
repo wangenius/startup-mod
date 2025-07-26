@@ -31,11 +31,51 @@ class GameHandler:
         player.startup_idea = idea
         logger.info(f"玩家 {player_name} 提交创业想法: {idea}")
         
+        # 广播玩家想法提交状态更新
+        await connection_manager.broadcast_to_room(
+            room_id,
+            {
+                "type": MessageType.PLAYER_JOIN,  # 复用PLAYER_JOIN消息类型来更新玩家列表
+                "data": {
+                    "player_name": player_name,
+                    "players": [
+                        {
+                            "name": p.name, 
+                            "is_online": p.is_online,
+                            "startup_idea": p.startup_idea,
+                            "role": p.role,
+                            "isHost": p.is_host
+                        } for p in room.players
+                    ],
+                }
+            }
+        )
+        
         # 检查是否所有玩家都提交了想法
         if room.all_players_have_ideas():
             # 选择一个想法作为团队的创业想法（这里简单选择第一个）
             room.startup_idea = room.get_online_players()[0].startup_idea
             logger.info(f"房间 {room_id} 确定创业想法: {room.startup_idea}")
+            
+            # 广播所有想法已提交完成，可以开始游戏
+            await connection_manager.broadcast_to_room(
+                room_id,
+                {
+                    "type": MessageType.IDEAS_COMPLETE,
+                    "data": {
+                        "startup_idea": room.startup_idea,
+                        "players": [
+                            {
+                                "name": p.name, 
+                                "is_online": p.is_online,
+                                "startup_idea": p.startup_idea,
+                                "role": p.role,
+                                "isHost": p.is_host
+                            } for p in room.players
+                        ],
+                    }
+                }
+            )
 
     @staticmethod
     async def handle_start_game(player_name: str):

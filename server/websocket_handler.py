@@ -44,40 +44,90 @@ class WebSocketHandler:
             if not player:
                 # 玩家不在房间中，需要加入
                 room = room_manager.join_room(player_name, room_id)
+                player = room.get_player(player_name)
+                is_reconnect = False
             else:
-                # 玩家已在房间中，设置为在线状态
+                # 玩家已在房间中，设置为在线状态（重连）
                 player.is_online = True
+                is_reconnect = True
                 
             connection_manager.join_room(player_name, room.room_id)
 
-            # 广播玩家加入
-            await connection_manager.broadcast_to_room(
-                room.room_id,
-                {
-                    "type": MessageType.PLAYER_JOIN,
-                    "data": {
-                        "player_name": player_name,
-                        "players": [
-                            {
-                                "name": p.name, 
-                                "is_online": p.is_online,
-                                "role": p.role,
-                                "startup_idea": p.startup_idea,
-                                "isHost": p.is_host
-                            } for p in room.players
-                        ],
+            # 只有在新加入时才广播玩家加入消息
+            if not is_reconnect:
+                await connection_manager.broadcast_to_room(
+                    room.room_id,
+                    {
+                        "type": MessageType.PLAYER_JOIN,
+                        "data": {
+                            "player_name": player_name,
+                            "players": [
+                                {
+                                    "name": p.name, 
+                                    "is_online": p.is_online,
+                                    "role": p.role,
+                                    "startup_idea": p.startup_idea,
+                                    "isHost": p.is_host
+                                } for p in room.players
+                            ],
+                        },
                     },
-                },
-            )
+                )
+            else:
+                # 重连时，只向其他玩家发送玩家列表更新
+                await connection_manager.broadcast_to_room(
+                    room.room_id,
+                    {
+                        "type": MessageType.PLAYER_JOIN,
+                        "data": {
+                            "player_name": player_name,
+                            "players": [
+                                {
+                                    "name": p.name, 
+                                    "is_online": p.is_online,
+                                    "role": p.role,
+                                    "startup_idea": p.startup_idea,
+                                    "isHost": p.is_host
+                                } for p in room.players
+                            ],
+                        },
+                    },
+                    exclude_player=player_name
+                )
             
-            # 发送连接成功消息
-            await websocket.send_text(json.dumps({
+            # 发送连接成功消息，包含当前游戏状态信息
+            connection_data = {
                 "type": MessageType.CONNECTION_SUCCESS,
                 "data": {
                     "room_id": room_id,
-                    "player_name": player_name
+                    "player_name": player_name,
+                    "is_reconnect": is_reconnect,
+                    "game_state": room.game_state.value,
+                    "current_round": room.current_round,
+                    "players": [
+                        {
+                            "name": p.name, 
+                            "is_online": p.is_online,
+                            "role": p.role,
+                            "startup_idea": p.startup_idea,
+                            "isHost": p.is_host
+                        } for p in room.players
+                    ]
                 }
-            }))
+            }
+            
+            # 如果游戏正在进行中，发送额外的状态信息
+            if room.game_state == "role_selection":
+                connection_data["data"]["selected_roles"] = room.get_selected_roles()
+            elif room.game_state == "playing":
+                from models import ROUND_INFO
+                connection_data["data"]["round_info"] = ROUND_INFO.get(room.current_round, "")
+                if room.current_round in room.round_actions:
+                    connection_data["data"]["player_actions"] = room.round_actions[room.current_round]
+            elif room.game_state == "finished" and room.game_result:
+                connection_data["data"]["game_result"] = room.game_result
+                
+            await websocket.send_text(json.dumps(connection_data))
             
         except ValueError as e:
             await websocket.close(code=4004, reason=str(e))

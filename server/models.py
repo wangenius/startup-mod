@@ -10,6 +10,7 @@ class MessageType(str, Enum):
     PLAYER_JOIN = "player_join"
     PLAYER_LEAVE = "player_leave"
     GAME_START = "game_start"
+    IDEAS_COMPLETE = "ideas_complete"
     ROLE_SELECTED = "role_selected"
     ROLES_COMPLETE = "roles_complete"
     ROUND_START = "round_start"

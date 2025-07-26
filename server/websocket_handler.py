@@ -125,14 +125,24 @@ class WebSocketHandler:
                 # 发送动态生成的角色定义（如果存在）
                 if room.dynamic_roles:
                     connection_data["data"]["roles"] = room.dynamic_roles
+            elif room.game_state == "loading":
+                connection_data["data"]["round_info"] = room.get_round_info(room.current_round)
+                connection_data["data"]["loading_message"] = f"AI正在生成第{room.current_round}轮事件，请稍候..."
+                # 在加载状态也需要背景信息
+                if room.background:
+                    connection_data["data"]["background"] = room.background
             elif room.game_state == "playing":
-                from models import ROUND_INFO
-                connection_data["data"]["round_info"] = ROUND_INFO.get(room.current_round, "")
+                connection_data["data"]["round_info"] = room.get_round_info(room.current_round)
                 if room.current_round in room.round_actions:
                     connection_data["data"]["player_actions"] = room.round_actions[room.current_round]
                 # 在游戏进行中也需要背景信息
                 if room.background:
                     connection_data["data"]["background"] = room.background
+                # 包含当前轮次的事件和私人信息
+                if room.round_events and room.current_round in room.round_events:
+                    connection_data["data"]["roundEvent"] = room.round_events[room.current_round]
+                if room.round_private_messages and room.current_round in room.round_private_messages:
+                    connection_data["data"]["privateMessages"] = room.round_private_messages[room.current_round]
             elif room.game_state == "finished" and room.game_result:
                 connection_data["data"]["game_result"] = room.game_result
                 

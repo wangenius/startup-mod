@@ -4,6 +4,8 @@ import os
 from typing import Iterable, Optional, Dict, Any, List
 from dotenv import load_dotenv
 
+from room_manager import logger
+
 # 加载.env文件
 load_dotenv()
 from openai.types.chat import ChatCompletionMessageParam
@@ -53,6 +55,8 @@ class LLM:
 
         messages.append({"role": "user", "content": prompt})
 
+        logger.info(f"发送给OpenAI的消息: {messages}")
+
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -60,6 +64,7 @@ class LLM:
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
+            logger.info(f"生成的结果:{response.choices[0].message.content}")
             return response.choices[0].message.content or ""
         except Exception as e:
             raise Exception(f"调用OpenAI API失败: {str(e)}")
@@ -85,7 +90,7 @@ class LLM:
         """
         # 如果没有提供系统提示，添加默认的JSON格式要求
         if not system_prompt:
-            system_prompt = "请以有效的JSON格式回复，不要包含任何其他文本。"
+            system_prompt = "请以有效的JSON格式回复，不要包含任何其他文本。不要包含markdown格式的前后缀！"
         else:
             system_prompt += "\n\n请确保回复是有效的JSON格式。"
         try:
@@ -100,7 +105,16 @@ class LLM:
                 response_format={"type": "json_object"},
             )
 
+            logger.info(f"提示词：{prompt}")
+
             content = response.choices[0].message.content or ""
+
+            if content.startswith("```json"):
+                content = content[7:]
+            if content.endswith("```"):
+                content = content[:-3]
+
+            logger.info(f"生成结果:{content}")
             return json.loads(content)
         except json.JSONDecodeError as e:
             raise Exception(f"返回的内容不是有效的JSON格式: {str(e)}")

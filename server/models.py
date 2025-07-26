@@ -14,6 +14,7 @@ class MessageType(str, Enum):
     IDEAS_COMPLETE = "ideas_complete"
     ROLE_SELECTED = "role_selected"
     ROLES_COMPLETE = "roles_complete"
+    ROUND_LOADING = "round_loading"  # 回合加载状态
     ROUND_START = "round_start"
     ACTION_SUBMITTED = "action_submitted"
     ROUND_COMPLETE = "round_complete"
@@ -25,6 +26,7 @@ class MessageType(str, Enum):
 class GameState(str, Enum):
     LOBBY = "lobby"
     ROLE_SELECTION = "role_selection"
+    LOADING = "loading"  # 回合间加载状态
     PLAYING = "playing"
     FINISHED = "finished"
 
@@ -60,8 +62,8 @@ ROLE_DEFINITIONS = {
     }
 }
 
-# 轮次信息
-ROUND_INFO = {
+# 默认轮次信息模板（用于初始化）
+DEFAULT_ROUND_TEMPLATES = {
     1: "初创阶段：验证产品市场契合度",
     2: "成长阶段：扩大用户基础和市场份额",
     3: "扩张阶段：进入新市场和产品线",
@@ -92,6 +94,9 @@ class GameRoom(BaseModel):
     dynamic_roles: Optional[Dict] = None  # 保存动态生成的角色定义
     game_result: Optional[Dict] = None
     round_actions: Dict[int, List[Dict]] = {}
+    round_events: Dict[int, Dict] = {}  # 保存每轮的事件和选项
+    round_private_messages: Dict[int, Dict] = {}  # 保存每轮的私人信息
+    dynamic_round_info: Dict[int, str] = {}  # 保存动态生成的轮次信息
 
     def add_player(self, player: Player) -> bool:
         """添加玩家到房间"""
@@ -163,6 +168,42 @@ class GameRoom(BaseModel):
         ]
         
         self.round_actions[round_num].append(action)
+
+    def get_round_info(self, round_num: int) -> str:
+        """获取指定轮次的信息"""
+        # 如果有动态生成的轮次信息，优先使用
+        if round_num in self.dynamic_round_info:
+            return self.dynamic_round_info[round_num]
+        
+        # 否则使用默认模板
+        return DEFAULT_ROUND_TEMPLATES.get(round_num, f"第{round_num}轮：继续发展业务")
+
+    def set_round_info(self, round_num: int, info: str):
+        """设置指定轮次的动态信息"""
+        self.dynamic_round_info[round_num] = info
+
+    def generate_next_round_info(self, previous_round_result: Dict) -> str:
+        """根据上一轮的结果生成下一轮的信息"""
+        next_round = self.current_round + 1
+        
+        # 这里可以根据上一轮的结果动态生成下一轮的描述
+        # 目前先使用简单的逻辑，后续可以集成AI生成
+        if next_round <= 5:
+            base_template = DEFAULT_ROUND_TEMPLATES.get(next_round, f"第{next_round}轮：继续发展业务")
+            
+            # 根据上一轮结果调整描述
+            if previous_round_result and "success" in previous_round_result:
+                if previous_round_result["success"]:
+                    dynamic_info = f"{base_template}（基于上轮成功经验）"
+                else:
+                    dynamic_info = f"{base_template}（需要改进上轮问题）"
+            else:
+                dynamic_info = base_template
+            
+            self.set_round_info(next_round, dynamic_info)
+            return dynamic_info
+        
+        return f"第{next_round}轮：继续发展业务"
 
     def calculate_game_result(self) -> Dict:
         """计算游戏结果"""
@@ -264,6 +305,9 @@ class GameRoom(BaseModel):
         self.dynamic_roles = None  # 重置动态角色定义，重新开始时会重新生成
         self.game_result = None
         self.round_actions = {}
+        self.round_events = {}  # 重置轮次事件
+        self.round_private_messages = {}  # 重置私人信息
+        self.dynamic_round_info = {}  # 重置动态轮次信息
         
         # 重置玩家的游戏相关状态，但保留玩家名称和房主状态
         for player in self.players:

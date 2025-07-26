@@ -50,6 +50,10 @@ class JoinRoomRequest(BaseModel):
     room_id: str
     player_name: str
 
+class EventGenerationRequest(BaseModel):
+    round: int
+    player_name: str
+
 @app.get("/rooms/{room_id}/status")
 async def get_room_status(room_id: str):
     """检查房间状态"""
@@ -85,6 +89,69 @@ async def join_room_endpoint(request: JoinRoomRequest):
     except Exception as e:
         logger.error(f"Error joining room: {e}")
         raise HTTPException(status_code=500, detail="服务器内部错误")
+
+
+@app.post("/api/generate-event")
+async def generate_event(request: EventGenerationRequest):
+    """生成游戏事件"""
+    try:
+        # 导入事件生成相关模块
+        import os
+        import sys
+        import json
+        
+        # 添加script目录到Python路径
+        script_dir = os.path.join(os.path.dirname(__file__), 'script')
+        if script_dir not in sys.path:
+            sys.path.append(script_dir)
+        
+        from script.step2_decision import DecisionMaker
+        
+        # 读取背景信息
+        output_dir = os.path.join(script_dir, 'output')
+        background_file = os.path.join(output_dir, 'background.json')
+        
+        if not os.path.exists(background_file):
+            raise HTTPException(status_code=404, detail="游戏背景文件不存在，请先初始化游戏")
+        
+        with open(background_file, 'r', encoding='utf-8') as f:
+            background_data = json.load(f)
+        
+        # 构建初始想法
+        background_text = background_data.get('background', '')
+        player_ideas = background_data.get('player_ideas', [])
+        
+        if player_ideas:
+            initial_idea = f"创业想法：{' + '.join(player_ideas)}\n\n{background_text}"
+        else:
+            initial_idea = background_text
+        
+        # 创建决策制定器
+        decision_maker = DecisionMaker(initial_idea)
+        
+        # 如果不是第一轮，加载之前的输出
+        if request.round > 1:
+            previous_round_file = os.path.join(output_dir, f'round_{request.round-1}.json')
+            if os.path.exists(previous_round_file):
+                with open(previous_round_file, 'r', encoding='utf-8') as f:
+                    decision_maker.previous_output = json.load(f)
+        
+        # 生成事件
+        event = decision_maker.generate_event(request.round)
+        
+        logger.info(f"Generated event for round {request.round} by player {request.player_name}")
+        
+        return {
+            "success": True,
+            "round": request.round,
+            "event": event,
+            "generated_by": request.player_name,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating event: {e}")
+        raise HTTPException(status_code=500, detail=f"生成事件失败: {str(e)}")
 
 
 # WebSocket 端点

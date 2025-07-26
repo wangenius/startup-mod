@@ -4,10 +4,12 @@ import GameLobby from "./components/GameLobby";
 import GamePlay from "./components/GamePlay";
 import GameResult from "./components/GameResult";
 import LoadingPage from "./components/LoadingPage";
+import RoundLoadingPage from "./components/RoundLoadingPage";
 import RoleSelection from "./components/RoleSelection";
 import RoomManager from "./components/RoomManager";
 import RoundResult from "./components/RoundResult";
 import WelcomePage from "./components/WelcomePage";
+import EventGeneration from "./components/EventGeneration";
 
 // 游戏状态枚举
 const GAME_STATES = {
@@ -15,7 +17,9 @@ const GAME_STATES = {
   ROOM_SELECTION: "room_selection",
   LOBBY: "lobby",
   LOADING: "loading",
+  ROUND_LOADING: "round_loading",
   ROLE_SELECTION: "role_selection",
+  EVENT_GENERATION: "event_generation",
   PLAYING: "playing",
   ROUND_RESULT: "round_result",
   RESULT: "result",
@@ -53,6 +57,8 @@ function App() {
   // 游戏相关状态
   const [currentRound, setCurrentRound] = useState(1);
   const [roundInfo, setRoundInfo] = useState("");
+  const [roundEvent, setRoundEvent] = useState(null);
+  const [privateMessages, setPrivateMessages] = useState({});
   const [playerActions, setPlayerActions] = useState([]);
   const [gameResult, setGameResult] = useState(null);
   const [selectedRoles, setSelectedRoles] = useState([]);
@@ -222,6 +228,16 @@ function App() {
                 setRoleDefinitions(roles);
               }
               break;
+            case "loading":
+              setGameState(GAME_STATES.ROUND_LOADING);
+              setCurrentRound(current_round || 1);
+              if (round_info) {
+                setRoundInfo(round_info);
+              }
+              if (background) {
+                setGameBackground(background);
+              }
+              break;
             case "playing":
               setGameState(GAME_STATES.PLAYING);
               setCurrentRound(current_round || 1);
@@ -233,6 +249,13 @@ function App() {
               }
               if (background) {
                 setGameBackground(background);
+              }
+              // 恢复轮次事件和私人信息
+              if (message.data.roundEvent) {
+                setRoundEvent(message.data.roundEvent);
+              }
+              if (message.data.privateMessages) {
+                setPrivateMessages(message.data.privateMessages);
               }
               break;
             case "finished":
@@ -250,6 +273,7 @@ function App() {
             {
               lobby: GAME_STATES.LOBBY,
               role_selection: GAME_STATES.ROLE_SELECTION,
+              loading: GAME_STATES.ROUND_LOADING,
               playing: GAME_STATES.PLAYING,
               finished: GAME_STATES.RESULT,
             }[game_state] || GAME_STATES.LOBBY;
@@ -324,13 +348,31 @@ function App() {
         setGameState(GAME_STATES.PLAYING);
         setCurrentRound(1);
         setRoundInfo(message.data.roundInfo);
+        if (message.data.roundEvent) {
+          setRoundEvent(message.data.roundEvent);
+        }
+        if (message.data.privateMessages) {
+          setPrivateMessages(message.data.privateMessages);
+        }
         saveGameState(playerName, currentRoom, GAME_STATES.PLAYING);
         addMessage("🎯 所有角色已选择，游戏正式开始");
+        break;
+      case "round_loading":
+        setGameState(GAME_STATES.ROUND_LOADING);
+        setCurrentRound(message.data.round);
+        saveGameState(playerName, currentRoom, GAME_STATES.ROUND_LOADING);
+        addMessage(`🔄 ${message.data.message}`);
         break;
       case "round_start":
         setGameState(GAME_STATES.PLAYING);
         setCurrentRound(message.data.round);
         setRoundInfo(message.data.roundInfo);
+        if (message.data.roundEvent) {
+          setRoundEvent(message.data.roundEvent);
+        }
+        if (message.data.privateMessages) {
+          setPrivateMessages(message.data.privateMessages);
+        }
         setPlayerActions([]);
         setWaitingForPlayers(false);
         break;
@@ -468,6 +510,20 @@ function App() {
     }
   };
 
+  // 处理事件生成完成
+  const handleEventGenerated = (eventData) => {
+    addMessage(`第${eventData.round}轮事件已生成`);
+    // 可以在这里保存事件数据或进行其他处理
+  };
+
+  // 处理开始轮次
+  const handleStartRound = (eventData) => {
+    setGameState(GAME_STATES.PLAYING);
+    setRoundInfo(eventData.description);
+    saveGameState(playerName, currentRoom, GAME_STATES.PLAYING);
+    addMessage(`第${currentRound}轮游戏开始`);
+   };
+
   // 处理继续下一轮
   const handleContinueToNextRound = () => {
     if (wsRef.current && wsConnected) {
@@ -504,6 +560,8 @@ function App() {
     // 保持房间连接，只重置游戏状态
     setCurrentRound(1);
     setRoundInfo("");
+    setRoundEvent(null);
+    setPrivateMessages({});
     setPlayerActions([]);
     setGameResult(null);
     setSelectedRoles([]);
@@ -557,6 +615,16 @@ function App() {
           />
         );
 
+      case GAME_STATES.ROUND_LOADING:
+        return (
+          <RoundLoadingPage
+            roomId={currentRoom}
+            playerName={playerName}
+            currentRound={currentRound}
+            loadingMessage={null}
+          />
+        );
+
       case GAME_STATES.ROLE_SELECTION:
         return (
           <RoleSelection
@@ -569,6 +637,16 @@ function App() {
           />
         );
 
+      case GAME_STATES.EVENT_GENERATION:
+        return (
+          <EventGeneration
+            playerName={playerName}
+            currentRound={currentRound}
+            onEventGenerated={handleEventGenerated}
+            onStartRound={handleStartRound}
+          />
+        );
+
       case GAME_STATES.PLAYING:
         return (
           <GamePlay
@@ -576,6 +654,8 @@ function App() {
             playerName={playerName}
             currentRound={currentRound}
             roundInfo={roundInfo}
+            roundEvent={roundEvent}
+            privateMessages={privateMessages}
             onActionSubmit={handleActionSubmit}
             waitingForPlayers={waitingForPlayers}
             playerActions={playerActions}

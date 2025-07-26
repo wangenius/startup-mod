@@ -25,25 +25,8 @@ class RoleGenerator:
         prompt = role_prompt_template.replace("{background}", background)
         
         try:
-            # 使用LLM生成角色定义
-            response = self.llm.text(prompt, temperature=0.7)
-            
-            # 尝试解析JSON响应
-            try:
-                # 提取JSON部分（如果响应包含其他文本）
-                start_idx = response.find('{')
-                end_idx = response.rfind('}') + 1
-                if start_idx != -1 and end_idx != 0:
-                    json_str = response[start_idx:end_idx]
-                    role_definitions = json.loads(json_str)
-                else:
-                    # 如果没有找到JSON，尝试直接解析整个响应
-                    role_definitions = json.loads(response)
-            except json.JSONDecodeError as e:
-                print(f"JSON解析失败: {e}")
-                print(f"原始响应: {response}")
-                # 如果解析失败，返回默认角色定义
-                return self._get_default_roles()
+            # 使用LLM生成角色定义，直接获取JSON格式响应
+            role_definitions = self.llm.json(prompt, temperature=0.7)
             
             # 保存到output文件夹
             output_path = os.path.join(script_dir, "output", "generated_roles.json")

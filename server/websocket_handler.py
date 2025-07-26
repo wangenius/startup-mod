@@ -119,11 +119,17 @@ class WebSocketHandler:
             # 如果游戏正在进行中，发送额外的状态信息
             if room.game_state == "role_selection":
                 connection_data["data"]["selected_roles"] = room.get_selected_roles()
+                # 在角色选择阶段也需要背景信息
+                if room.background:
+                    connection_data["data"]["background"] = room.background
             elif room.game_state == "playing":
                 from models import ROUND_INFO
                 connection_data["data"]["round_info"] = ROUND_INFO.get(room.current_round, "")
                 if room.current_round in room.round_actions:
                     connection_data["data"]["player_actions"] = room.round_actions[room.current_round]
+                # 在游戏进行中也需要背景信息
+                if room.background:
+                    connection_data["data"]["background"] = room.background
             elif room.game_state == "finished" and room.game_result:
                 connection_data["data"]["game_result"] = room.game_result
                 

@@ -9,6 +9,7 @@ import random
 class MessageType(str, Enum):
     PLAYER_JOIN = "player_join"
     PLAYER_LEAVE = "player_leave"
+    GAME_LOADING = "game_loading"
     GAME_START = "game_start"
     IDEAS_COMPLETE = "ideas_complete"
     ROLE_SELECTED = "role_selected"
@@ -87,6 +88,7 @@ class GameRoom(BaseModel):
     game_state: GameState = GameState.LOBBY
     current_round: int = 1
     startup_idea: Optional[str] = None
+    background: Optional[str] = None
     game_result: Optional[Dict] = None
     round_actions: Dict[int, List[Dict]] = {}
 
@@ -257,6 +259,7 @@ class GameRoom(BaseModel):
         # 重置游戏状态
         self.game_state = GameState.LOBBY
         self.current_round = 1
+        self.background = None
         self.game_result = None
         self.round_actions = {}
         

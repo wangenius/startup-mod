@@ -27,6 +27,34 @@ class BackgroundGenerator:
         self.initial_idea = input().strip()
         return self.initial_idea
 
+    def generate_background_from_ideas(self, player_ideas):
+        """根据所有玩家的想法生成背景"""
+        if not player_ideas:
+            raise ValueError("没有玩家想法")
+        
+        # 将所有想法合并为一个字符串
+        combined_ideas = "\n".join([f"- {idea}" for idea in player_ideas if idea])
+        
+        # 填充prompt模板
+        prompt = prompt_template.replace("{initial_idea}", combined_ideas)
+        
+        # 使用LLM类调用API
+        try:
+            self.background = self.llm.text(prompt, temperature=0.7)
+            
+            # 保存到output文件夹
+            output_path = os.path.join(script_dir, "output", "background.json")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(
+                    {"background": self.background, "player_ideas": player_ideas}, 
+                    f, ensure_ascii=False, indent=4
+                )
+            
+            return self.background
+        except Exception as e:
+            raise Exception(f"生成背景导入词失败: {str(e)}")
+
     def generate_background(self):
         if not self.initial_idea:
             raise ValueError("请先输入初始创业想法")

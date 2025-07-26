@@ -31,7 +31,7 @@ const ROLES = [
   }
 ];
 
-function RoleSelection({ players, playerName, onRoleSelect, selectedRoles }) {
+function RoleSelection({ players, playerName, onRoleSelect, selectedRoles, gameBackground }) {
   const [selectedRole, setSelectedRole] = useState(null);
 
   const handleRoleSelect = (roleId) => {
@@ -51,6 +51,34 @@ function RoleSelection({ players, playerName, onRoleSelect, selectedRoles }) {
             <h1 className="text-3xl font-bold text-gray-800 mb-2">🎭 选择您的身份</h1>
             <p className="text-gray-600">每个角色都有不同的职责和决策权限</p>
           </div>
+          
+          {/* 游戏背景故事 */}
+          {gameBackground && (
+            <div className="mb-8">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                  📖 游戏背景故事
+                </h2>
+                <div className="text-gray-700 leading-relaxed">
+                  {typeof gameBackground === 'string' ? (
+                    <p className="whitespace-pre-wrap">{gameBackground}</p>
+                  ) : (
+                    <div>
+                      {gameBackground.title && (
+                        <h3 className="text-lg font-medium mb-2">{gameBackground.title}</h3>
+                      )}
+                      {gameBackground.story && (
+                        <p className="whitespace-pre-wrap">{gameBackground.story}</p>
+                      )}
+                      {gameBackground.description && (
+                        <p className="whitespace-pre-wrap">{gameBackground.description}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* 角色选择 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

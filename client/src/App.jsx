@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import GameLobby from "./components/GameLobby";
 import GamePlay from "./components/GamePlay";
 import GameResult from "./components/GameResult";
+import LoadingPage from "./components/LoadingPage";
 import RoleSelection from "./components/RoleSelection";
 import RoomManager from "./components/RoomManager";
 import RoundResult from "./components/RoundResult";
@@ -13,6 +14,7 @@ const GAME_STATES = {
   WELCOME: "welcome",
   ROOM_SELECTION: "room_selection",
   LOBBY: "lobby",
+  LOADING: "loading",
   ROLE_SELECTION: "role_selection",
   PLAYING: "playing",
   ROUND_RESULT: "round_result",
@@ -57,6 +59,7 @@ function App() {
   const [waitingForPlayers, setWaitingForPlayers] = useState(false);
   const [completedRound, setCompletedRound] = useState(null);
   const [completedRoundActions, setCompletedRoundActions] = useState([]);
+  const [gameBackground, setGameBackground] = useState(null);
 
   const [_, setMessages] = useState([]);
 
@@ -190,6 +193,7 @@ function App() {
           round_info,
           player_actions,
           game_result,
+          background,
         } = message.data;
 
         // 更新玩家列表
@@ -209,6 +213,9 @@ function App() {
               if (selected_roles) {
                 setSelectedRoles(selected_roles);
               }
+              if (background) {
+                setGameBackground(background);
+              }
               break;
             case "playing":
               setGameState(GAME_STATES.PLAYING);
@@ -218,6 +225,9 @@ function App() {
               }
               if (player_actions) {
                 setPlayerActions(player_actions);
+              }
+              if (background) {
+                setGameBackground(background);
               }
               break;
             case "finished":
@@ -285,9 +295,17 @@ function App() {
         addMessage("💡 所有创业想法已提交完成，可以开始游戏了！");
         setPlayers(message.data.players);
         break;
+      case "game_loading":
+        setGameState(GAME_STATES.LOADING);
+        saveGameState(playerName, currentRoom, GAME_STATES.LOADING);
+        addMessage("🔄 游戏正在加载中...");
+        break;
       case "game_start":
         setGameState(GAME_STATES.ROLE_SELECTION);
         saveGameState(playerName, currentRoom, GAME_STATES.ROLE_SELECTION);
+        if (message.data && message.data.background) {
+          setGameBackground(message.data.background);
+        }
         addMessage("🚀 游戏开始，请选择角色");
         break;
       case "role_selected":
@@ -408,6 +426,8 @@ function App() {
   // 处理开始游戏
   const handleStartGame = () => {
     if (wsRef.current && wsConnected) {
+      setGameState(GAME_STATES.LOADING);
+      saveGameState(playerName, currentRoom, GAME_STATES.LOADING);
       wsRef.current.send(
         JSON.stringify({
           type: "start_game",
@@ -482,6 +502,7 @@ function App() {
     setWaitingForPlayers(false);
     setCompletedRound(null);
     setCompletedRoundActions([]);
+    setGameBackground(null);
 
     // 保存新的游戏状态
     saveGameState(playerName, currentRoom, GAME_STATES.LOBBY);
@@ -519,6 +540,14 @@ function App() {
         );
       }
 
+      case GAME_STATES.LOADING:
+        return (
+          <LoadingPage
+            roomId={currentRoom}
+            playerName={playerName}
+          />
+        );
+
       case GAME_STATES.ROLE_SELECTION:
         return (
           <RoleSelection
@@ -526,6 +555,7 @@ function App() {
             playerName={playerName}
             onRoleSelect={handleRoleSelect}
             selectedRoles={selectedRoles}
+            gameBackground={gameBackground}
           />
         );
 
@@ -578,6 +608,7 @@ function App() {
           <div>连接: {wsConnected ? "已连接" : "未连接"}</div>
           <div>房间: {currentRoom}</div>
           <div>轮次: {currentRound}/5</div>
+          <button onClick={handleRestartGame}>重新开始</button>
         </div>
       )}
     </div>

@@ -1,16 +1,16 @@
 function LoadingPage({ playerName, roleName }) {
   const displayName = roleName || playerName || "林燃";
-  
+
   // 根据角色名称确定对应的图片
   const getRoleImage = (role) => {
     const roleImageMap = {
-      'CEO': '/CEO.png',
-      'CTO': '/CTO.png',
-      'CMO': '/CMO.png',
-      'COO': '/COO.png',
-      'CPO': '/CPO.png'
+      CEO: "/CEO.png",
+      CTO: "/CTO.png",
+      CMO: "/CMO.png",
+      COO: "/COO.png",
+      CPO: "/CPO.png",
     };
-    return roleImageMap[role] || '/CEO.png'; // 默认使用CEO图片
+    return roleImageMap[role.toUpperCase()] || "/CEO.png"; // 默认使用CEO图片
   };
   return (
     <div className="w-96 h-[874px] relative bg-black overflow-hidden">

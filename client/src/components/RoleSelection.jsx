@@ -72,16 +72,41 @@ function RoleSelection({
           selectedRoles.includes(role.id.toLowerCase()) && !isSelected;
 
         return (
-          <div key={role.id}>
+          <div key={role.id} className="relative">
+            {/* 选中状态的背景高亮 */}
+            {isSelected && (
+              <div 
+                className={`w-72 h-40 left-[64px] top-[${role.position.top}px] absolute bg-yellow-400/20 rounded-lg animate-pulse`}
+                style={{ zIndex: 0 }}
+              />
+            )}
+            
             <img
               className={`w-72 h-40 left-[64px] top-[${
                 role.position.top
-              }px] absolute cursor-pointer ${isOccupied ? "opacity-5" : ""}`}
+              }px] absolute cursor-pointer transition-all duration-300 ${
+                isOccupied 
+                  ? "opacity-30" 
+                  : isSelected 
+                  ? "ring-4 ring-yellow-400 ring-opacity-80 shadow-lg shadow-yellow-400/50 brightness-110 z-10" 
+                  : "hover:brightness-110 hover:shadow-md z-10"
+              }`}
               src={role.image}
               onClick={() =>
                 !isOccupied && !hasSelectedRole && handleRoleSelect(role.id)
               }
             />
+            
+            {/* 选中状态的勾选标记 */}
+            {isSelected && (
+              <div 
+                className={`absolute top-[${role.position.top + 10}px] left-[310px] w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center z-20 animate-bounce`}
+              >
+                <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
 
             {/* 角色标签 */}
             {role.position.roleLabel && (

@@ -1,11 +1,8 @@
 # 房间管理器
 from typing import Dict, Optional
 from datetime import datetime
-import logging
-
 from room import GameRoom, Player
-
-logger = logging.getLogger(__name__)
+from logger_config import logger
 
 
 class RoomManager:

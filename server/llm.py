@@ -4,7 +4,7 @@ import os
 from typing import Iterable, Optional, Dict, Any, List
 from dotenv import load_dotenv
 
-from room_manager import logger
+from logger_config import logger
 
 # 加载.env文件
 load_dotenv()

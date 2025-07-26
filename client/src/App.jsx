@@ -56,7 +56,6 @@ function App() {
   const [wsConnected, setWsConnected] = useState(false);
   // 游戏相关状态
   const [currentRound, setCurrentRound] = useState(1);
-  const [roundInfo, setRoundInfo] = useState("");
   const [roundEvent, setRoundEvent] = useState(null);
   const [privateMessages, setPrivateMessages] = useState({});
   const [playerActions, setPlayerActions] = useState([]);
@@ -192,7 +191,6 @@ function App() {
         setCurrentRoom(roomId);
 
         console.log("连接成功", message.data);
-        
 
         const {
           is_reconnect,
@@ -200,11 +198,10 @@ function App() {
           current_round,
           players,
           selected_roles,
-          round_info,
           player_actions,
           game_result,
           background,
-          dynamic_roles:roles,
+          dynamic_roles: roles,
         } = message.data;
 
         // 更新玩家列表
@@ -234,9 +231,7 @@ function App() {
             case "loading":
               setGameState(GAME_STATES.ROUND_LOADING);
               setCurrentRound(current_round || 1);
-              if (round_info) {
-                setRoundInfo(round_info);
-              }
+
               if (background) {
                 setGameBackground(background);
               }
@@ -244,9 +239,7 @@ function App() {
             case "playing":
               setGameState(GAME_STATES.PLAYING);
               setCurrentRound(current_round || 1);
-              if (round_info) {
-                setRoundInfo(round_info);
-              }
+
               if (player_actions) {
                 setPlayerActions(player_actions);
               }
@@ -290,7 +283,6 @@ function App() {
       } else {
         handleWebSocketMessage(message);
         console.log("收到消息", message);
-        
       }
     };
 
@@ -352,7 +344,6 @@ function App() {
       case "roles_complete":
         setGameState(GAME_STATES.PLAYING);
         setCurrentRound(1);
-        setRoundInfo(message.data.roundInfo);
         if (message.data.roundEvent) {
           setRoundEvent(message.data.roundEvent);
         }
@@ -371,7 +362,6 @@ function App() {
       case "round_start":
         setGameState(GAME_STATES.PLAYING);
         setCurrentRound(message.data.round);
-        setRoundInfo(message.data.roundInfo);
         if (message.data.roundEvent) {
           setRoundEvent(message.data.roundEvent);
         }
@@ -522,12 +512,11 @@ function App() {
   };
 
   // 处理开始轮次
-  const handleStartRound = (eventData) => {
+  const handleStartRound = () => {
     setGameState(GAME_STATES.PLAYING);
-    setRoundInfo(eventData.description);
     saveGameState(playerName, currentRoom, GAME_STATES.PLAYING);
     addMessage(`第${currentRound}轮游戏开始`);
-   };
+  };
 
   // 处理继续下一轮
   const handleContinueToNextRound = () => {
@@ -564,7 +553,6 @@ function App() {
     setGameState(GAME_STATES.LOBBY);
     // 保持房间连接，只重置游戏状态
     setCurrentRound(1);
-    setRoundInfo("");
     setRoundEvent(null);
     setPrivateMessages({});
     setPlayerActions([]);
@@ -613,12 +601,7 @@ function App() {
       }
 
       case GAME_STATES.LOADING:
-        return (
-          <LoadingPage
-            roomId={currentRoom}
-            playerName={playerName}
-          />
-        );
+        return <LoadingPage roomId={currentRoom} playerName={playerName} />;
 
       case GAME_STATES.ROUND_LOADING:
         return (
@@ -658,7 +641,6 @@ function App() {
             gameState={{ players }}
             playerName={playerName}
             currentRound={currentRound}
-            roundInfo={roundInfo}
             roundEvent={roundEvent}
             privateMessages={privateMessages}
             onActionSubmit={handleActionSubmit}

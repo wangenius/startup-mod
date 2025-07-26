@@ -9,7 +9,7 @@ import sys
 script_dir = os.path.join(os.path.dirname(__file__), "script")
 sys.path.append(script_dir)
 
-from room import GameState, Role, MessageType
+from room import GameRoom, GameState, Role, MessageType
 from connection_manager import connection_manager
 from room_manager import room_manager
 
@@ -336,26 +336,18 @@ class GameHandler:
             await GameHandler._handle_round_complete(room_id, room)
 
     @staticmethod
-    async def _handle_round_complete(room_id: str, room):
+    async def _handle_round_complete(room_id: str, room: GameRoom):
         """处理轮次完成"""
         logger.info(f"房间 {room_id} 第{room.current_round}轮完成")
 
         # 根据当前轮次的结果生成下一轮的动态信息
         if room.current_round < 5:
             try:
-                # 构建当前轮次的结果数据
-                current_round_result = {
-                    "round": room.current_round,
-                    "actions": room.round_actions.get(room.current_round, []),
-                    "success": len(room.round_actions.get(room.current_round, []))
-                    > 0,  # 简化的成功判断
-                }
-
                 # 生成下一轮的动态信息
-                next_round_info = room.generate_next_round_info(current_round_result)
-                logger.info(
-                    f"房间 {room_id} 生成第{room.current_round + 1}轮动态信息: {next_round_info}"
+                event_data = await asyncio.get_event_loop().run_in_executor(
+                    None, room.generate_event, 1
                 )
+               
             except Exception as e:
                 logger.error(f"房间 {room_id} 生成下一轮动态信息失败: {str(e)}")
 

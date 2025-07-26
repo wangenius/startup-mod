@@ -14,6 +14,8 @@ function GamePlay({
   const [selectedAction, setSelectedAction] = useState("");
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  console.log(roundEvent);
+
   useEffect(() => {
     // 重置提交状态当新一轮开始时
     setHasSubmitted(false);
@@ -33,40 +35,6 @@ function GamePlay({
   const currentPlayer = gameState.players?.find((p) => p.name === playerName);
   const playerRole = currentPlayer?.role;
 
-  // 获取可用的决策选项
-  const getAvailableActions = () => {
-    if (!roundEvent || !roundEvent.options) {
-      return [];
-    }
-
-    // 将后端的选项格式转换为前端需要的格式
-    return roundEvent.options.map((option, index) => {
-      // 处理后端返回的选项格式："选项1: 描述内容"
-      const optionText = option.replace(/^选项\d+:\s*/, '');
-      return {
-        id: String.fromCharCode(65 + index), // A, B, C, D
-        name: `选项${String.fromCharCode(65 + index)}`,
-        description: optionText,
-      };
-    });
-  };
-
-  const availableActions = getAvailableActions();
-
-  // 调试信息
-  console.log(
-    "Debug - playerRole:",
-    playerRole,
-    "roundEvent:",
-    roundEvent,
-    "availableActions:",
-    availableActions,
-    "privateMessages:",
-    privateMessages,
-    "privateMessages[playerRole]:",
-    privateMessages ? privateMessages[playerRole.toUpperCase()] : 'privateMessages is null'
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-6xl mx-auto">
@@ -79,7 +47,7 @@ function GamePlay({
             <div className="text-right">
               <div className="text-sm text-gray-600">您的角色</div>
               <div className="text-lg font-semibold text-blue-600">
-                {playerRole.toUpperCase()}
+                {playerRole}
               </div>
             </div>
           </div>
@@ -101,20 +69,23 @@ function GamePlay({
                 🎲 本轮事件
               </h2>
               <div className="text-purple-700">
-                <p>{roundEvent.description}</p>
+                <p>{roundEvent.event_description}</p>
               </div>
             </div>
           )}
 
           {/* 私人信息 */}
-          {privateMessages && privateMessages[playerRole.toUpperCase()] && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <h2 className="text-lg font-semibold text-yellow-800 mb-2">
-                🔒 私人信息
-              </h2>
-              <p className="text-yellow-700">{privateMessages[playerRole.toUpperCase()]}</p>
-            </div>
-          )}
+          {privateMessages &&
+            privateMessages[String(playerRole).toUpperCase()] && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h2 className="text-lg font-semibold text-yellow-800 mb-2">
+                  🔒 私人信息
+                </h2>
+                <p className="text-yellow-700">
+                  {privateMessages[String(playerRole).toUpperCase()]}
+                </p>
+              </div>
+            )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -128,22 +99,22 @@ function GamePlay({
               <div className="space-y-4">
                 {/* 行动选项 */}
                 <div className="space-y-3">
-                  {availableActions.length > 0 ? (
-                    availableActions.map((action) => (
-                      <div
-                        key={action.id}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                          selectedAction === action.id
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-300 hover:border-gray-400"
-                        }`}
-                        onClick={() => setSelectedAction(action.id)}
-                      >
-                        <div className="text-gray-600 mt-1">
-                          {action.name}: {action.description}
+                  {roundEvent?.decision_options ? (
+                    Object.entries(roundEvent.decision_options).map(
+                      ([key, action]) => (
+                        <div
+                          key={key}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            selectedAction === key
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-300 hover:border-gray-400"
+                          }`}
+                          onClick={() => setSelectedAction(key)}
+                        >
+                          <div className="text-gray-600 mt-1">{key} : {action}</div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    )
                   ) : (
                     <div className="p-4 rounded-lg border border-gray-300 bg-gray-50">
                       <div className="text-gray-600 text-center">

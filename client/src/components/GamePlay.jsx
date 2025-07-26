@@ -54,12 +54,12 @@ function GamePlay({
       // 事件展示阶段，3秒后自动切换到信息和选项阶段
       timer = setTimeout(() => {
         setCurrentPhase(GAME_PHASES.INFO_AND_OPTIONS);
-      }, 3000);
+      }, 10000);
     } else if (currentPhase === GAME_PHASES.INFO_AND_OPTIONS) {
       // 信息和选项阶段，5秒后自动切换到讨论阶段
       timer = setTimeout(() => {
         setCurrentPhase(GAME_PHASES.DISCUSSION);
-      }, 5000);
+      }, 20000);
     }
 
     return () => clearTimeout(timer);

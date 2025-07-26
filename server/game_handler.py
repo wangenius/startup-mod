@@ -521,8 +521,19 @@ class GameHandler:
             await GameHandler._start_next_round(room_id, room)
 
     @staticmethod
-    async def _handle_game_complete(room_id: str, room):
+    async def _handle_game_complete(room_id: str, room: GameRoom):
         """处理游戏完成"""
+        # 先广播游戏结果计算中的Loading状态
+        room.game_state = GameState.LOADING
+        await connection_manager.broadcast_to_room(
+            room_id,
+            {
+                "type": MessageType.GAME_LOADING,
+                "data": {"message": "AI正在分析游戏结果，请稍候..."},
+            },
+        )
+        
+        # 计算游戏结果
         room.game_state = GameState.FINISHED
         room.game_result = room.calculate_game_result()
         logger.info(f"房间 {room_id} 游戏结束")

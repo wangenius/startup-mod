@@ -237,8 +237,7 @@ class GameHandler:
         # 检查是否游戏结束
         if room.current_round >= 5:
             await GameHandler._handle_game_complete(room_id, room)
-        else:
-            await GameHandler._start_next_round(room_id, room)
+        # 不自动进入下一轮，等待前端确认
 
     @staticmethod
     async def _handle_game_complete(room_id: str, room):
@@ -256,6 +255,24 @@ class GameHandler:
                 }
             }
         )
+
+    @staticmethod
+    async def handle_continue_next_round(player_name: str):
+        """处理继续下一轮请求"""
+        room_id = connection_manager.get_player_room(player_name)
+        if not room_id:
+            return
+
+        room = room_manager.get_room(room_id)
+        if not room or room.game_state != GameState.PLAYING:
+            return
+
+        # 只有房主可以继续下一轮
+        player = room.get_player(player_name)
+        if not player or not player.is_host:
+            return
+
+        await GameHandler._start_next_round(room_id, room)
 
     @staticmethod
     async def _start_next_round(room_id: str, room):

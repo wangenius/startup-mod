@@ -35,6 +35,11 @@ function GamePlay({
 
   // 根据角色获取可用行动
   const getAvailableActions = (role) => {
+    if (!role) return [];
+    
+    // 将角色转换为大写以匹配键名
+    const roleKey = role.toUpperCase();
+    
     const actions = {
       CEO: [
         { id: 'strategic_decision', name: '制定战略决策', description: '制定公司整体发展战略' },
@@ -61,10 +66,13 @@ function GamePlay({
         { id: 'cost_control', name: '成本控制', description: '控制和优化运营成本' }
       ]
     };
-    return actions[role] || [];
+    return actions[roleKey] || [];
   };
 
   const availableActions = getAvailableActions(playerRole);
+  
+  // 调试信息
+  console.log('Debug - playerRole:', playerRole, 'availableActions:', availableActions);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -154,7 +162,7 @@ function GamePlay({
             
             <div className="space-y-3">
               {gameState.players?.map((player, index) => {
-                const hasSubmittedAction = playerActions?.some(action => action.playerName === player.name);
+                const hasSubmittedAction = playerActions?.some(action => action.player === player.name);
                 return (
                   <div
                     key={index}

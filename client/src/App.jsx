@@ -4,6 +4,7 @@ import GamePlay from './components/GamePlay';
 import GameResult from './components/GameResult';
 import RoleSelection from './components/RoleSelection';
 import RoomManager from './components/RoomManager';
+import RoundResult from './components/RoundResult';
 import WelcomePage from './components/WelcomePage';
 
 // 游戏状态枚举
@@ -13,6 +14,7 @@ const GAME_STATES = {
   LOBBY: 'lobby',
   ROLE_SELECTION: 'role_selection',
   PLAYING: 'playing',
+  ROUND_RESULT: 'round_result',
   RESULT: 'result'
 };
 
@@ -52,6 +54,8 @@ function App() {
   const [gameResult, setGameResult] = useState(null);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [waitingForPlayers, setWaitingForPlayers] = useState(false);
+  const [completedRound, setCompletedRound] = useState(null);
+  const [completedRoundActions, setCompletedRoundActions] = useState([]);
   
   const [_, setMessages] = useState([]);
 
@@ -284,6 +288,7 @@ function App() {
         addMessage("🎯 所有角色已选择，游戏正式开始");
         break;
       case "round_start":
+        setGameState(GAME_STATES.PLAYING);
         setCurrentRound(message.data.round);
         setRoundInfo(message.data.roundInfo);
         setPlayerActions([]);
@@ -294,6 +299,9 @@ function App() {
         setWaitingForPlayers(message.data.waitingForPlayers);
         break;
       case "round_complete":
+        setCompletedRound(message.data.round);
+        setCompletedRoundActions(playerActions);
+        setGameState(GAME_STATES.ROUND_RESULT);
         addMessage(`第${message.data.round}轮结束`);
         break;
       case "game_complete":
@@ -409,6 +417,20 @@ function App() {
     }
   };
 
+  // 处理继续下一轮
+  const handleContinueToNextRound = () => {
+    if (wsRef.current && wsConnected) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "continue_next_round"
+        })
+      );
+    }
+    // 重置轮次结果状态
+    setCompletedRound(null);
+    setCompletedRoundActions([]);
+  };
+
   // 处理重新开始游戏
   const handleRestartGame = () => {
     setGameState(GAME_STATES.WELCOME);
@@ -477,6 +499,17 @@ function App() {
             onActionSubmit={handleActionSubmit}
             waitingForPlayers={waitingForPlayers}
             playerActions={playerActions}
+          />
+        );
+      
+      case GAME_STATES.ROUND_RESULT:
+        return (
+          <RoundResult
+            roundNumber={completedRound}
+            playerActions={completedRoundActions}
+            players={players}
+            playerName={playerName}
+            onContinueToNextRound={handleContinueToNextRound}
           />
         );
       

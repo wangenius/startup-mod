@@ -122,6 +122,9 @@ class WebSocketHandler:
                 # 在角色选择阶段也需要背景信息
                 if room.background:
                     connection_data["data"]["background"] = room.background
+                # 发送动态生成的角色定义（如果存在）
+                if room.dynamic_roles:
+                    connection_data["data"]["roles"] = room.dynamic_roles
             elif room.game_state == "playing":
                 from models import ROUND_INFO
                 connection_data["data"]["round_info"] = ROUND_INFO.get(room.current_round, "")

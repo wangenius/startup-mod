@@ -162,6 +162,8 @@ class GameHandler:
                         "description": role_data["description"],
                         "actions": default_actions
                     }
+                # 保存动态角色定义到房间状态中
+                room.dynamic_roles = dynamic_roles
                 logger.info(f"房间 {room_id} 生成动态角色定义成功")
             except Exception as e:
                 logger.error(f"房间 {room_id} 生成动态角色定义失败: {str(e)}")

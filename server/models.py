@@ -89,6 +89,7 @@ class GameRoom(BaseModel):
     current_round: int = 1
     startup_idea: Optional[str] = None
     background: Optional[str] = None
+    dynamic_roles: Optional[Dict] = None  # 保存动态生成的角色定义
     game_result: Optional[Dict] = None
     round_actions: Dict[int, List[Dict]] = {}
 
@@ -260,6 +261,7 @@ class GameRoom(BaseModel):
         self.game_state = GameState.LOBBY
         self.current_round = 1
         self.background = None
+        self.dynamic_roles = None  # 重置动态角色定义，重新开始时会重新生成
         self.game_result = None
         self.round_actions = {}
         

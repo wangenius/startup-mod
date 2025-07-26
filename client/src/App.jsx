@@ -195,6 +195,7 @@ function App() {
           player_actions,
           game_result,
           background,
+          roles,
         } = message.data;
 
         // 更新玩家列表
@@ -216,6 +217,9 @@ function App() {
               }
               if (background) {
                 setGameBackground(background);
+              }
+              if (roles) {
+                setRoleDefinitions(roles);
               }
               break;
             case "playing":

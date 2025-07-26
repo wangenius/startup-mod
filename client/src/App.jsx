@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import GameLobby from "./components/GameLobby";
 import GamePlay from "./components/GamePlay";
 import GameResult from "./components/GameResult";
-import LoadingPage from "./components/LoadingPage";
+// LoadingPage已移除，因为角色选择完成后会自动开始游戏
 import RoundLoadingPage from "./components/RoundLoadingPage";
 import RoleSelection from "./components/RoleSelection";
 import RoomManager from "./components/RoomManager";
@@ -64,8 +64,6 @@ function App() {
   const [gameResult, setGameResult] = useState(null);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [waitingForPlayers, setWaitingForPlayers] = useState(false);
-  const [completedRound, setCompletedRound] = useState(null);
-  const [completedRoundActions, setCompletedRoundActions] = useState([]);
   const [gameBackground, setGameBackground] = useState(null);
   const [roleDefinitions, setRoleDefinitions] = useState(null);
 
@@ -347,9 +345,8 @@ function App() {
         setPlayers(message.data.players);
         break;
       case "roles_complete":
-        setGameState(GAME_STATES.LOADING);
-        saveGameState(playerName, currentRoom, GAME_STATES.LOADING);
-        addMessage("🎯 所有角色已选择，等待房主开始游戏");
+        // 角色选择完成后会自动开始游戏，不再需要等待
+        addMessage("🎯 所有角色已选择，游戏即将自动开始");
         break;
       case "game_started":
         setGameState(GAME_STATES.PLAYING);
@@ -386,9 +383,7 @@ function App() {
         setWaitingForPlayers(message.data.waitingForPlayers);
         break;
       case "round_complete":
-        setCompletedRound(message.data.round);
-        setCompletedRoundActions(playerActions);
-        setGameState(GAME_STATES.ROUND_RESULT);
+        // 轮次完成消息现在不再需要处理，因为后端会直接进入下一轮
         addMessage(`第${message.data.round}轮结束`);
         break;
       case "game_complete":
@@ -476,16 +471,7 @@ function App() {
     }
   };
 
-  // 处理开始游戏
-  const handleStartGame = () => {
-    if (wsRef.current && wsConnected) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: "start_game",
-        })
-      );
-    }
-  };
+  // handleStartGame函数已移除，因为角色选择完成后会自动开始游戏
 
   // 处理游戏行动提交
   const handleActionSubmit = (action) => {
@@ -512,19 +498,7 @@ function App() {
     addMessage(`第${currentRound}轮游戏开始`);
   };
 
-  // 处理继续下一轮
-  const handleContinueToNextRound = () => {
-    if (wsRef.current && wsConnected) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: "continue_next_round",
-        })
-      );
-    }
-    // 重置轮次结果状态
-    setCompletedRound(null);
-    setCompletedRoundActions([]);
-  };
+  // 处理继续下一轮 - 已移除，因为后端现在自动进入下一轮
 
   // 处理重新开始游戏
   const handleRestartGame = () => {
@@ -553,8 +527,6 @@ function App() {
     setGameResult(null);
     setSelectedRoles([]);
     setWaitingForPlayers(false);
-    setCompletedRound(null);
-    setCompletedRoundActions([]);
     setGameBackground(null);
     setRoleDefinitions(null);
 
@@ -597,27 +569,21 @@ function App() {
       }
 
       case GAME_STATES.ROLE_SELECTION: {
-        const currentPlayer = players.find((p) => p.name === playerName);
-        const isHost = currentPlayer?.isHost || false;
         return (
           <RoleSelection
             players={players}
             playerName={playerName}
             onRoleSelect={handleRoleSelect}
-            onStartGame={handleStartGame}
             selectedRoles={selectedRoles}
             gameBackground={gameBackground}
             roleDefinitions={roleDefinitions}
-            isHost={isHost}
           />
         );
       }
 
-      case GAME_STATES.LOADING: {
-        const currentPlayer = players.find((p) => p.name === playerName);
-        const isHost = currentPlayer?.isHost || false;
-        return <LoadingPage isHost={isHost} onStartGame={handleStartGame} />;
-      }
+      case GAME_STATES.LOADING:
+        // 角色选择完成后会自动开始游戏，不再显示等待页面
+        return null;
 
       case GAME_STATES.ROUND_LOADING:
         return (
@@ -654,15 +620,8 @@ function App() {
         );
 
       case GAME_STATES.ROUND_RESULT:
-        return (
-          <RoundResult
-            roundNumber={completedRound}
-            playerActions={completedRoundActions}
-            players={players}
-            playerName={playerName}
-            onContinueToNextRound={handleContinueToNextRound}
-          />
-        );
+        // RoundResult页面已移除，因为现在直接进入下一轮
+        return null;
 
       case GAME_STATES.RESULT:
         return (

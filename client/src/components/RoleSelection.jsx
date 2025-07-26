@@ -14,7 +14,6 @@ function RoleSelection({
   onRoleSelect,
   selectedRoles = [],
   gameBackground,
-  onStartGame,
 }) {
   const [selectedRole, setSelectedRole] = useState(null);
 
@@ -146,31 +145,16 @@ function RoleSelection({
         </div>
       )}
 
-      {/* 开始游戏按钮 */}
+      {/* 角色选择完成提示 */}
       {allPlayersSelected && (
-        <div className="absolute bottom-[40px] left-[20px] right-[20px] space-y-2">
+        <div className="absolute bottom-[40px] left-[20px] right-[20px]">
           <div className="bg-green-600 bg-opacity-80 rounded-lg p-3">
             <p className="text-white text-sm font-['Space_Grotesk'] text-center">
               🎉 所有玩家已选择角色！
+              <br />
+              游戏即将自动开始...
             </p>
           </div>
-          {/* 只有房主可以开始游戏 */}
-          {players.find(p => p.name === playerName)?.isHost && onStartGame && (
-            <button
-              onClick={onStartGame}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-['Space_Grotesk'] py-3 px-4 rounded-lg transition-colors"
-            >
-              开始游戏
-            </button>
-          )}
-          {/* 非房主显示等待提示 */}
-          {!players.find(p => p.name === playerName)?.isHost && (
-            <div className="bg-gray-600 bg-opacity-80 rounded-lg p-3">
-              <p className="text-white text-sm font-['Space_Grotesk'] text-center">
-                等待房主开始游戏...
-              </p>
-            </div>
-          )}
         </div>
       )}
     </div>

@@ -85,9 +85,6 @@ class GameHandler:
                     },
                 },
             )
-            
-            # 等待角色选择完成后再开始游戏
-            # 移除自动开始游戏调用，改为在角色选择完成后开始
 
     @staticmethod
     async def _auto_start_game(room_id: str):
@@ -263,9 +260,7 @@ class GameHandler:
                 },
             )
         
-        # 如果在角色选择状态且所有角色已选择，开始第一轮游戏
-        elif room.game_state == GameState.ROLE_SELECTION and room.all_players_have_roles():
-            await GameHandler._auto_start_game_after_role_selection(room_id)
+        # 角色选择完成后会自动开始游戏，不再需要房主手动开始
 
     @staticmethod
     async def handle_role_selection(player_name: str, role: str):
@@ -323,28 +318,10 @@ class GameHandler:
 
         # 检查是否所有玩家都选择了角色
         if room.all_players_have_roles():
-            logger.info(f"房间 {room_id} 所有角色已选择，等待开始游戏")
+            logger.info(f"房间 {room_id} 所有角色已选择，直接开始游戏")
             
-            # 所有玩家选择完角色后，广播角色选择完成消息，等待房主开始游戏
-            await connection_manager.broadcast_to_room(
-                room_id,
-                {
-                    "type": MessageType.ROLES_COMPLETE,
-                    "data": {
-                        "selectedRoles": room.get_selected_roles(),
-                        "players": [
-                            {
-                                "name": p.name,
-                                "is_online": p.is_online,
-                                "role": p.role,
-                                "startup_idea": p.startup_idea,
-                                "isHost": p.is_host,
-                            }
-                            for p in room.players
-                        ],
-                    },
-                },
-            )
+            # 所有玩家选择完角色后，直接开始游戏
+            await GameHandler._auto_start_game_after_role_selection(room_id)
 
     @staticmethod
     async def _auto_start_game_after_role_selection(room_id: str):
@@ -459,41 +436,12 @@ class GameHandler:
         """处理轮次完成"""
         logger.info(f"房间 {room_id} 第{room.current_round}轮完成")
 
-        # 先向前端发送加载状态通知
-        room.game_state = GameState.LOADING
-        await connection_manager.broadcast_to_room(
-            room_id,
-            {
-                "type": MessageType.ROUND_LOADING,
-                "data": {
-                    "round": room.current_round,
-                    "message": f"AI正在处理第{room.current_round}轮结果，请稍候...",
-                },
-            },
-        )
-
-        # 根据当前轮次的结果生成下一轮的动态信息
-        if room.current_round < 5:
-            try:
-                # 生成下一轮的动态信息
-                event_data = await asyncio.get_event_loop().run_in_executor(
-                    None, room.generate_event, 1
-                )
-               
-            except Exception as e:
-                logger.error(f"房间 {room_id} 生成下一轮动态信息失败: {str(e)}")
-
-        # 恢复游戏状态并广播轮次完成
-        room.game_state = GameState.PLAYING
-        await connection_manager.broadcast_to_room(
-            room_id,
-            {"type": MessageType.ROUND_COMPLETE, "data": {"round": room.current_round}},
-        )
-
         # 检查是否游戏结束
         if room.current_round >= 5:
             await GameHandler._handle_game_complete(room_id, room)
-        # 不自动进入下一轮，等待前端确认
+        else:
+            # 直接进入下一轮，不显示RoundResult页面
+            await GameHandler._start_next_round(room_id, room)
 
     @staticmethod
     async def _handle_game_complete(room_id: str, room):
@@ -507,23 +455,7 @@ class GameHandler:
             {"type": MessageType.GAME_COMPLETE, "data": {"result": room.game_result}},
         )
 
-    @staticmethod
-    async def handle_continue_next_round(player_name: str):
-        """处理继续下一轮请求"""
-        room_id = connection_manager.get_player_room(player_name)
-        if not room_id:
-            return
-
-        room = room_manager.get_room(room_id)
-        if not room or room.game_state != GameState.PLAYING:
-            return
-
-        # 只有房主可以继续下一轮
-        player = room.get_player(player_name)
-        if not player or not player.is_host:
-            return
-
-        await GameHandler._start_next_round(room_id, room)
+    # handle_continue_next_round方法已移除，因为现在自动进入下一轮
 
     @staticmethod
     async def _start_next_round(room_id: str, room):

@@ -194,8 +194,7 @@ class WebSocketHandler:
                 await game_handler.handle_role_selection(player_name, data.get("role"))
             elif message_type == "game_action":
                 await game_handler.handle_game_action(player_name, data)
-            elif message_type == "continue_next_round":
-                await game_handler.handle_continue_next_round(player_name)
+            # continue_next_round消息处理已移除，因为现在自动进入下一轮
             elif message_type == "restart_game":
                 await game_handler.handle_restart_game(player_name)
             else:

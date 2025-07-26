@@ -28,26 +28,36 @@ function GameLobby({ onStartupIdeaSubmit }) {
 
   return (
     <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
-      <div className="w-32 h-7 left-[136px] top-[357px] absolute">
-        <div className="left-[8px] top-[2px] absolute text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
-          <input
-            type="text"
+      <div className="w-80 min-h-7 left-[50px] top-[357px] absolute">
+        <div className="left-[8px] top-[2px] absolute text-left justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+          <textarea
             value={startupIdea}
             onChange={(e) => setStartupIdea(e.target.value)}
             placeholder="你的项目是..."
-            className="bg-transparent border-none outline-none text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed placeholder-white w-full"
+            className="bg-transparent border-none outline-none text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed placeholder-white w-full resize-none overflow-hidden"
             disabled={ideaSubmitted}
+            rows={1}
+            style={{
+              minHeight: '28px',
+              height: 'auto'
+            }}
+            onInput={(e) => {
+              e.target.style.height = 'auto';
+              e.target.style.height = e.target.scrollHeight + 'px';
+            }}
           />
         </div>
         <div className="w-px h-7 left-0 top-0 absolute bg-zinc-300 animate-pulse" />
       </div>
 
-      <button
-        onClick={handleRandomGenerate}
-        className="left-[169px] top-[531px] absolute text-center justify-start text-white/70 text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed hover:text-white transition-colors cursor-pointer"
-      >
-        随机生成
-      </button>
+      {!startupIdea.trim() && (
+        <button
+          onClick={handleRandomGenerate}
+          className="left-[169px] top-[531px] absolute text-center justify-start text-white/70 text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed hover:text-white transition-colors cursor-pointer"
+        >
+          随机生成
+        </button>
+      )}
       <div className="p-1.5 left-[117px] top-[710px] absolute bg-zinc-300/80 rounded-[20px] shadow-[0px_1.5px_0px_0px_rgba(255,255,255,0.10)] shadow-[inset_0px_0px_2px_0px_rgba(0,0,0,0.08)] inline-flex justify-start items-start gap-2.5">
         <button
           onClick={handleSubmitIdea}

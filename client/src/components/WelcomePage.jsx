@@ -15,16 +15,17 @@ function WelcomePage({ onPlayerNameSet }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <div className="w-64 h-7 left-[36px] top-[357px] absolute">
-            <div className="left-[8px] top-[2px] absolute text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+            <div className="left-[8px] top-[2px] absolute text-left justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
               <input
                 type="text"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="bg-transparent border-none outline-none text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed placeholder-white w-full"
                 placeholder="输入用户名"
                 required
               />
             </div>
+            <div className="w-px h-7 left-0 top-0 absolute bg-zinc-300 animate-pulse" />
           </div>
         </div>
 

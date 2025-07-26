@@ -17,9 +17,4 @@
       </div>
     </div>
   </div>
-  <div className="w-10 h-10 left-[179px] top-[485px] absolute bg-zinc-900 rounded-lg outline outline-1 outline-offset-[-1px] outline-stone-500 overflow-hidden">
-    <div className="w-5 h-5 left-[10px] top-[10px] absolute overflow-hidden">
-      <div className="w-4 h-4 left-[1.80px] top-[1.80px] absolute bg-white" />
-    </div>
-  </div>
 </div>;

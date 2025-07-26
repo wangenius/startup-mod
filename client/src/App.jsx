@@ -653,7 +653,7 @@ function App() {
           <GameResult
             gameResult={gameResult}
             players={players}
-            onRestartGame={handleRestartGame}
+            onRestart={handleRestartGame}
           />
         );
 

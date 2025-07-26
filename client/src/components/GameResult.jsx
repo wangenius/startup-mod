@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-function GameResult({ gameResult }) {
+function GameResult({ gameResult, onRestart }) {
   const [isPrinting, setIsPrinting] = useState(false);
   const [printProgress, setPrintProgress] = useState(0);
   const [reportSections, setReportSections] = useState({});
@@ -72,12 +72,21 @@ function GameResult({ gameResult }) {
     setIsPrinting(true);
   };
 
+  const handleRestart = () => {
+    setIsPrinting(false);
+    setPrintProgress(0);
+    if (onRestart) {
+      onRestart();
+    }
+  };
+
   return (
     <div className="relative">
       <PrinterEffect
         isPrinting={isPrinting}
         printProgress={printProgress}
         onStartPrint={handleStartPrint}
+        onRestart={handleRestart}
         reportSections={reportSections}
         gameResult={gameResult}
       />
@@ -89,27 +98,28 @@ function PrinterEffect({
   isPrinting,
   printProgress,
   onStartPrint,
+  onRestart,
   reportSections,
 }) {
   return (
     <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
       {/* 打印机背景 */}
-      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-0">
+      <div className="absolute bottom-0 -left-8 -right-8 transform z-0">
         <img
-          className="w-full max-w-[502px] h-96 object-contain"
+          className="w-full object-contain"
           src="./print.png"
           alt="打印机"
         />
       </div>
 
-      {/* 顶部装饰背景 */}
+      {/* 顶部装饰背景
       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-[515px] h-[500px] overflow-hidden opacity-30">
         <img
           className="w-full h-full object-cover mix-blend-lighten"
           src="./background2.png"
           alt="背景装饰"
         />
-      </div>
+      </div> */}
 
       {/* 初始状态内容 */}
       {!isPrinting && (
@@ -146,7 +156,7 @@ function PrinterEffect({
           >
             {/* Day1 标签 */}
             {printProgress > 10 && (
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-white rounded-md flex items-center justify-center animate-fadeIn">
+              <div className="absolute left-2 top-2 transform w-10 h-10 bg-white rounded-md flex items-center justify-center animate-fadeIn">
                 <span className="text-black text-sm font-normal font-['IdeaFonts_YouQiTi']">
                   Day1
                 </span>
@@ -154,7 +164,7 @@ function PrinterEffect({
             )}
 
             {/* 打印内容 - 逐步显示 */}
-            <div className="p-6 text-zinc-800 text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed space-y-3 overflow-hidden">
+            <div className="p-6 text-zinc-800 text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed space-y-3 overflow-y-auto max-h-[500px]">
               {printProgress > 20 && (
                 <div className="text-center font-semibold text-lg mb-4 animate-slideDown">
                   创业结局报告
@@ -224,10 +234,18 @@ function PrinterEffect({
         </div>
       )}
 
-      {/* 底部标题 - 打印完成后显示 */}
+      {/* 底部标题和重新开始按钮 - 打印完成后显示 */}
       {printProgress >= 100 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center text-zinc-600 text-2xl font-normal font-['FZLanTingHeiS-H-GB'] leading-loose tracking-[3.84px] z-20 animate-fadeIn">
-          创业报告
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-20 animate-fadeIn">
+          <div className="text-zinc-600 text-2xl font-normal font-['FZLanTingHeiS-H-GB'] leading-loose tracking-[3.84px] mb-4">
+            创业报告
+          </div>
+          <button
+            onClick={onRestart}
+            className="bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium shadow-lg"
+          >
+            重新开始
+          </button>
         </div>
       )}
 

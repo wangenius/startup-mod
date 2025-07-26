@@ -1,208 +1,77 @@
-import { useState } from "react";
+function GameResult() {}
 
-function GameResult({ gameResult, players, onRestartGame }) {
-  const [showDetails, setShowDetails] = useState(false);
-
-  const getSuccessLevel = (score) => {
-    if (score >= 90)
-      return { level: "巨大成功", color: "text-green-600", icon: "🚀" };
-    if (score >= 70)
-      return { level: "成功", color: "text-blue-600", icon: "✅" };
-    if (score >= 50)
-      return { level: "一般", color: "text-yellow-600", icon: "⚠️" };
-    return { level: "失败", color: "text-red-600", icon: "❌" };
-  };
-
-  // 添加空值检查，防止页面刷新时 gameResult 为 null
-  if (!gameResult) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-xl p-8 text-center">
-          <div className="text-4xl mb-4">⏳</div>
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">
-            加载游戏结果中...
-          </h2>
-          <p className="text-gray-600">请稍候，正在获取游戏数据</p>
-        </div>
-      </div>
-    );
-  }
-
-  const successInfo = getSuccessLevel(gameResult.finalScore || 0);
-
+function Page1() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* 主要结果 */}
-        <div className="bg-white rounded-lg shadow-xl p-8 mb-6 text-center">
-          <div className="text-6xl mb-4">{successInfo.icon}</div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">游戏结束</h1>
-          <h2 className={`text-2xl font-semibold mb-4 ${successInfo.color}`}>
-            {successInfo.level}
-          </h2>
-          <div className="text-3xl font-bold text-gray-700 mb-4">
-            最终得分: {gameResult.finalScore || 0}/100
-          </div>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            {gameResult.summary || "游戏已完成，感谢您的参与！"}
-          </p>
-        </div>
-
-        {/* 详细统计 */}
-        <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-gray-700">
-              📊 详细统计
-            </h2>
-            <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              {showDetails ? "收起详情" : "展开详情"}
-            </button>
-          </div>
-
-          {/* 关键指标 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
-                {gameResult.metrics?.userGrowth || 0}%
-              </div>
-              <div className="text-sm text-gray-600">用户增长</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                ${gameResult.metrics?.revenue || 0}K
-              </div>
-              <div className="text-sm text-gray-600">营收</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
-                {gameResult.metrics?.marketShare || 0}%
-              </div>
-              <div className="text-sm text-gray-600">市场份额</div>
-            </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
-                {gameResult.metrics?.teamSize || 0}
-              </div>
-              <div className="text-sm text-gray-600">团队规模</div>
-            </div>
-          </div>
-
-          {/* 详细信息 */}
-          {showDetails && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  🎯 关键成就
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <ul className="space-y-2">
-                    {gameResult.achievements?.map((achievement, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center text-gray-700"
-                      >
-                        <span className="text-green-500 mr-2">✓</span>
-                        {achievement}
-                      </li>
-                    )) || [
-                      <li
-                        key="default"
-                        className="flex items-center text-gray-700"
-                      >
-                        <span className="text-green-500 mr-2">✓</span>
-                        完成了创业模拟游戏
-                      </li>,
-                    ]}
-                  </ul>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  📈 发展历程
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="space-y-3">
-                    {gameResult.timeline?.map((event, index) => (
-                      <div key={index} className="flex items-start">
-                        <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded mr-3 mt-1">
-                          第{index + 1}轮
-                        </div>
-                        <div className="text-gray-700">{event}</div>
-                      </div>
-                    )) || [
-                      <div key="default" className="text-gray-600">
-                        游戏历程记录暂无详细信息
-                      </div>,
-                    ]}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 玩家表现 */}
-        <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-            🏆 玩家表现
-          </h2>
-          <div className="space-y-3">
-            {players.map((player, index) => {
-              // 优先使用服务器返回的playerScores数据
-              const playerScore =
-                gameResult.playerScores?.[player.name] ||
-                Math.min(60 + (player.name.charCodeAt(0) % 30), 100);
-
-              // 获取玩家表现详细数据用于显示
-              const playerPerformance = gameResult.player_performance?.find(
-                (p) => p.player === player.name
-              );
-
-              return (
-                <div
-                  key={index}
-                  className="p-4 rounded-lg border border-gray-200 bg-gray-50 flex justify-between items-center"
-                >
-                  <div>
-                    <div className="font-medium text-gray-700">
-                      {player.name}
-                    </div>
-                    <div className="text-sm text-gray-600">{player.role}</div>
-                    {playerPerformance && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        行动次数: {playerPerformance.actions_taken}
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-semibold text-blue-600">
-                      {playerScore}/100
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {getSuccessLevel(playerScore).level}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="text-center">
-          <button
-            onClick={onRestartGame}
-            className="bg-blue-600 text-white py-4 px-8 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
-          >
-            🔄 重新开始游戏
-          </button>
+    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
+      <img
+        className="w-[467px] h-96 left-[-25px] top-[679px] absolute"
+        src="./print.png"
+      />
+      <div className="w-64 h-24 left-[68px] top-[701px] absolute bg-gradient-to-b from-gray-200 to-zinc-100 rounded-[1px]" />
+      <div className="left-[131px] top-[831px] absolute text-center justify-start text-zinc-600 text-3xl font-normal font-['FZLanTingHeiS-H-GB'] leading-loose tracking-[3.84px]">
+        创业报告
+      </div>
+      <div className="w-64 left-[86px] top-[337px] absolute text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+        五个月过去了
+        <br />
+        你们4个人的小团队
+        <br />
+      </div>
+      <div className="w-12 h-12 left-[177px] top-[731px] absolute">
+        <div className="w-12 h-12 left-0 top-0 absolute bg-white rounded-lg" />
+        <div className="left-[5.79px] top-[16.97px] absolute text-center justify-start text-black text-lg font-normal font-['IdeaFonts_YouQiTi'] leading-3">
+          Day1
         </div>
       </div>
     </div>
   );
 }
-
+function Page2() {
+  return (
+    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
+      <img
+        className="w-[502px] h-96 left-[-44px] top-[670px] absolute"
+        src="./print.png"
+      />
+      <div className="w-72 h-[725px] left-[56px] top-[79px] absolute bg-gradient-to-b from-gray-200 to-zinc-100 rounded-[1px]" />
+      <img
+        className="w-[515px] h-[500px] left-[-55px] top-[-80px] absolute mix-blend-lighten"
+        src="./background2.png"
+      />
+      <div className="w-64 left-[74px] top-[144px] absolute text-center justify-start text-zinc-800 text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+        公司结局
+        <br />
+        <br />
+        公司发展概述
+        <br />
+        经过两年的艰苦奋斗智适家居成功跨过了初创阶段的生死线。
+        <br />
+        2027年，公司在资本市场完成了A轮融资，估值突破5亿元人民币，
+        <br />
+        成为国内领先的生成式AI智能家居控制方案提供商
+        <br />
+        <br />
+        个人结局
+        <br />
+        <br />
+        CEO/Founder：林燃
+        <br />
+        未来3年轨迹
+        凭借卓越的战略眼光和领导力，林燃成功引领智适家居走出初创泥潭，实现资本市场突破。
+        他不仅精通融资运作，还积极推动公司文化建设和国际化扩张。
+        2026年，他被评为“年度创新创业领袖”，
+        <br />
+      </div>
+      <div className="left-[131px] top-[831px] absolute text-center justify-start text-zinc-600 text-3xl font-normal font-['FZLanTingHeiS-H-GB'] leading-loose tracking-[3.84px]">
+        创业报告
+      </div>
+      <div className="w-9 h-9 left-[184px] top-[89px] absolute">
+        <div className="w-9 h-9 left-0 top-0 absolute bg-white rounded-md" />
+        <div className="left-[4.34px] top-[12.72px] absolute text-center justify-start text-black text-sm font-normal font-['IdeaFonts_YouQiTi'] leading-[9.93px]">
+          Day1
+        </div>
+      </div>
+    </div>
+  );
+}
 export default GameResult;

@@ -320,8 +320,11 @@ function App() {
         setPlayers(message.data.players);
         break;
       case "ideas_complete":
-        addMessage("💡 所有创业想法已提交完成，可以开始游戏了！");
+        addMessage("💡 所有创业想法已提交完成，等待角色选择！");
         setPlayers(message.data.players);
+        // 设置游戏状态为角色选择
+        setGameState(GAME_STATES.ROLE_SELECTION);
+        saveGameState(playerName, currentRoom, GAME_STATES.ROLE_SELECTION);
         break;
       case "game_loading":
         setGameState(GAME_STATES.LOADING);
@@ -344,6 +347,11 @@ function App() {
         setPlayers(message.data.players);
         break;
       case "roles_complete":
+        setGameState(GAME_STATES.LOADING);
+        saveGameState(playerName, currentRoom, GAME_STATES.LOADING);
+        addMessage("🎯 所有角色已选择，等待房主开始游戏");
+        break;
+      case "game_started":
         setGameState(GAME_STATES.PLAYING);
         setCurrentRound(1);
         if (message.data.roundEvent) {
@@ -353,7 +361,7 @@ function App() {
           setPrivateMessages(message.data.privateMessages);
         }
         saveGameState(playerName, currentRoom, GAME_STATES.PLAYING);
-        addMessage("🎯 所有角色已选择，游戏正式开始");
+        addMessage("🎯 游戏正式开始");
         break;
       case "round_loading":
         setGameState(GAME_STATES.ROUND_LOADING);
@@ -456,19 +464,6 @@ function App() {
     }
   };
 
-  // 处理开始游戏
-  const handleStartGame = () => {
-    if (wsRef.current && wsConnected) {
-      setGameState(GAME_STATES.LOADING);
-      saveGameState(playerName, currentRoom, GAME_STATES.LOADING);
-      wsRef.current.send(
-        JSON.stringify({
-          type: "start_game",
-        })
-      );
-    }
-  };
-
   // 处理角色选择
   const handleRoleSelect = (roleId) => {
     if (wsRef.current && wsConnected) {
@@ -476,6 +471,17 @@ function App() {
         JSON.stringify({
           type: "select_role",
           data: { role: roleId },
+        })
+      );
+    }
+  };
+
+  // 处理开始游戏
+  const handleStartGame = () => {
+    if (wsRef.current && wsConnected) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "start_game",
         })
       );
     }
@@ -585,14 +591,33 @@ function App() {
             players={players}
             playerName={playerName}
             onStartupIdeaSubmit={handleStartupIdeaSubmit}
-            onStartGame={handleStartGame}
             isHost={isHost}
           />
         );
       }
 
-      case GAME_STATES.LOADING:
-        return <LoadingPage roomId={currentRoom} playerName={playerName} />;
+      case GAME_STATES.ROLE_SELECTION: {
+        const currentPlayer = players.find((p) => p.name === playerName);
+        const isHost = currentPlayer?.isHost || false;
+        return (
+          <RoleSelection
+            players={players}
+            playerName={playerName}
+            onRoleSelect={handleRoleSelect}
+            onStartGame={handleStartGame}
+            selectedRoles={selectedRoles}
+            gameBackground={gameBackground}
+            roleDefinitions={roleDefinitions}
+            isHost={isHost}
+          />
+        );
+      }
+
+      case GAME_STATES.LOADING: {
+        const currentPlayer = players.find((p) => p.name === playerName);
+        const isHost = currentPlayer?.isHost || false;
+        return <LoadingPage isHost={isHost} onStartGame={handleStartGame} />;
+      }
 
       case GAME_STATES.ROUND_LOADING:
         return (
@@ -601,18 +626,6 @@ function App() {
             playerName={playerName}
             currentRound={currentRound}
             loadingMessage={null}
-          />
-        );
-
-      case GAME_STATES.ROLE_SELECTION:
-        return (
-          <RoleSelection
-            players={players}
-            playerName={playerName}
-            onRoleSelect={handleRoleSelect}
-            selectedRoles={selectedRoles}
-            gameBackground={gameBackground}
-            roleDefinitions={roleDefinitions}
           />
         );
 

@@ -1,46 +1,38 @@
-function LoadingPage({ roomId, playerName }) {
+function LoadingPage({ isHost = false, onStartGame }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 flex items-center justify-center p-4">
-      <div className="max-w-md mx-auto">
-        <div className="bg-white rounded-lg shadow-xl p-8 text-center">
-          <div className="mb-6">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              🎮 游戏正在启动
-            </h1>
-            <p className="text-gray-600">房间ID: {roomId}</p>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <div className="flex items-center justify-center space-x-3 mb-3">
-                <div className="animate-pulse w-3 h-3 bg-purple-500 rounded-full"></div>
-                <div className="animate-pulse w-3 h-3 bg-purple-500 rounded-full" style={{animationDelay: '0.2s'}}></div>
-                <div className="animate-pulse w-3 h-3 bg-purple-500 rounded-full" style={{animationDelay: '0.4s'}}></div>
-              </div>
-              <h2 className="text-lg font-semibold text-purple-800 mb-2">
-                🤖 AI正在生成游戏背景
-              </h2>
-              <p className="text-purple-600 text-sm">
-                正在根据所有玩家的创业想法生成独特的游戏背景故事...
-              </p>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="text-md font-medium text-blue-800 mb-2">
-                ⚡ 即将开始
-              </h3>
-              <ul className="text-blue-600 text-sm space-y-1">
-                <li>• 角色选择阶段</li>
-                <li>• 5轮策略决策</li>
-                <li>• 团队协作挑战</li>
-              </ul>
-            </div>
-
-            <div className="text-gray-500 text-xs">
-              玩家: {playerName} | 请耐心等待，通常需要10-30秒
-            </div>
-          </div>
+    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
+      <img
+        className="w-96 h-[536px] left-0 top-0 absolute"
+        src="https://placehold.co/402x536"
+      />
+      <div className="w-80 left-[42px] top-[615px] absolute text-center justify-start text-white text-2xl font-normal font-['Cactus_Classical_Serif'] leading-loose">
+        🎯 所有角色已选择完成！
+        <br />
+        {isHost ? (
+          <>
+            准备开始游戏吗？
+            <br />
+            <button 
+              onClick={onStartGame}
+              className="mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              开始游戏
+            </button>
+          </>
+        ) : (
+          <>
+            等待房主开始游戏...
+            <br />
+            <div className="mt-4 text-lg opacity-75">⏳ 请耐心等待</div>
+          </>
+        )}
+      </div>
+      <div className="w-96 h-12 left-0 top-0 absolute overflow-hidden">
+        <div className="w-6 h-3 left-[360.66px] top-[18.66px] absolute opacity-30 rounded-[2.87px] border-1 border-white" />
+        <div className="w-[1.43px] h-1 left-[385.41px] top-[22.60px] absolute opacity-40 bg-white" />
+        <div className="w-5 h-2 left-[362.81px] top-[20.81px] absolute bg-white rounded-sm" />
+        <div className="w-14 h-6 left-[22.60px] top-[12.92px] absolute rounded-[34.44px]">
+          <div className="w-8 h-3 left-[13.40px] top-[5.56px] absolute bg-white" />
         </div>
       </div>
     </div>

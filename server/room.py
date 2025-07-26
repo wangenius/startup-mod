@@ -44,6 +44,7 @@ class MessageType(str, Enum):
     PLAYER_LEAVE = "player_leave"
     GAME_LOADING = "game_loading"
     GAME_START = "game_start"
+    GAME_STARTED = "game_started"
     IDEAS_COMPLETE = "ideas_complete"
     ROLE_SELECTED = "role_selected"
     ROLES_COMPLETE = "roles_complete"

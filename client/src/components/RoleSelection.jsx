@@ -1,210 +1,178 @@
 import { useState } from "react";
 
-// 角色图标和颜色映射
-const ROLE_STYLES = {
-  ceo: { icon: "👔", color: "bg-purple-100 border-purple-300 text-purple-800" },
-  cto: { icon: "💻", color: "bg-blue-100 border-blue-300 text-blue-800" },
-  cmo: { icon: "📈", color: "bg-green-100 border-green-300 text-green-800" },
-  coo: { icon: "⚙️", color: "bg-orange-100 border-orange-300 text-orange-800" },
-};
+// 角色定义
+const ROLES = [
+  { id: "CEO", name: "创始人", icon: "👔" },
+  { id: "CTO", name: "技术负责人", icon: "💻" },
+  { id: "CMO", name: "市场负责人", icon: "📈" },
+  { id: "COO", name: "运营负责人", icon: "⚙️" },
+];
 
 function RoleSelection({
-  players,
+  players = [],
   playerName,
   onRoleSelect,
-  selectedRoles,
+  selectedRoles = [],
   gameBackground,
-  roleDefinitions,
+  onStartGame,
 }) {
   const [selectedRole, setSelectedRole] = useState(null);
 
-  // 转换后端角色定义为前端格式
-  const convertRoleDefinitions = (backendRoles) => {
-    if (!backendRoles) return [];
-
-    return Object.entries(backendRoles).map(([roleKey, roleData]) => {
-      // roleKey是字符串（如"ceo"），因为Role枚举在JSON序列化时会变成字符串值
-      const roleValue = roleKey.toLowerCase();
-      const roleId = roleValue.toUpperCase();
-      const style = ROLE_STYLES[roleValue] || ROLE_STYLES["ceo"];
-
-      return {
-        id: roleId,
-        name: roleData.name,
-        description: roleData.description,
-        icon: style.icon,
-        color: style.color,
-      };
-    });
-  };
-  console.log("roleDefinitions", roleDefinitions);
-  
-
-  const ROLES = convertRoleDefinitions(roleDefinitions);
-
   const handleRoleSelect = (roleId) => {
-    if (selectedRoles.includes(roleId)) return;
+    if (selectedRoles.includes(roleId.toLowerCase())) return;
+    if (selectedRole) return; // 已经选择过角色
+
     setSelectedRole(roleId);
-    onRoleSelect(roleId);
+    if (onRoleSelect) {
+      onRoleSelect(roleId);
+    }
   };
 
   const currentPlayer = players.find((p) => p.name === playerName);
-  const hasSelectedRole = currentPlayer?.role;
+  const hasSelectedRole = currentPlayer?.role || selectedRole;
+  const allPlayersSelected = players.length > 0 && players.every((p) => p.role);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              🎭 选择您的身份
-            </h1>
-            <p className="text-gray-600">每个角色都有不同的职责和决策权限</p>
-          </div>
+    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
+      <div className="left-[159px] top-[58px] absolute text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
+        选择角色
+      </div>
 
-          {/* 游戏背景故事 */}
-          {gameBackground && (
-            <div className="mb-8">
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                  📖 游戏背景故事
-                </h2>
-                <div className="text-gray-700 leading-relaxed">
-                  {typeof gameBackground === "string" ? (
-                    <p className="whitespace-pre-wrap">{gameBackground}</p>
-                  ) : (
-                    <div>
-                      {gameBackground.title && (
-                        <h3 className="text-lg font-medium mb-2">
-                          {gameBackground.title}
-                        </h3>
-                      )}
-                      {gameBackground.story && (
-                        <p className="whitespace-pre-wrap">
-                          {gameBackground.story}
-                        </p>
-                      )}
-                      {gameBackground.description && (
-                        <p className="whitespace-pre-wrap">
-                          {gameBackground.description}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
+      {/* 游戏背景故事 */}
+      {gameBackground && (
+        <div className="absolute top-[90px] left-[20px] right-[20px] bg-gray-800 bg-opacity-80 rounded-lg p-4 max-h-[100px] overflow-y-auto">
+          <div className="text-white text-sm font-['Space_Grotesk']">
+            {typeof gameBackground === "string" ? (
+              <p className="whitespace-pre-wrap">{gameBackground}</p>
+            ) : (
+              <div>
+                {gameBackground.title && (
+                  <h3 className="font-medium mb-2">{gameBackground.title}</h3>
+                )}
+                {gameBackground.story && (
+                  <p className="whitespace-pre-wrap">{gameBackground.story}</p>
+                )}
+                {gameBackground.description && (
+                  <p className="whitespace-pre-wrap">
+                    {gameBackground.description}
+                  </p>
+                )}
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="w-72 left-[67px] top-[200px] absolute inline-flex flex-col justify-start items-start gap-2">
+        {ROLES.map((role) => {
+          const isSelected =
+            selectedRole === role.id ||
+            currentPlayer?.role === role.id.toLowerCase();
+          const isOccupied =
+            selectedRoles.includes(role.id.toLowerCase()) && !isSelected;
+          const occupiedBy = players.find(
+            (p) => p.role === role.id.toLowerCase()
+          );
+
+          return (
+            <div
+              key={role.id}
+              className={`w-72 h-40 relative bg-black rounded-xl outline outline-[0.78px] outline-offset-[-0.78px] overflow-hidden cursor-pointer transition-all ${
+                isSelected
+                  ? "outline-blue-400"
+                  : isOccupied
+                  ? "outline-gray-500 cursor-not-allowed opacity-60"
+                  : "outline-white hover:outline-gray-300"
+              }`}
+              onClick={() =>
+                !isOccupied && !hasSelectedRole && handleRoleSelect(role.id)
+              }
+            >
+              <div className="w-20 h-20 left-[144px] top-[60px] absolute bg-gray-200 blur-[50px]" />
+              <div className="w-36 h-36 left-[106px] top-[16px] absolute bg-gray-700 rounded-full flex items-center justify-center">
+                <span className="text-4xl">{role.icon}</span>
+              </div>
+              <div className="w-96 h-24 left-[-50.77px] top-[108.81px] absolute bg-gradient-to-b from-gray-600 to-blue-200 blur-xl" />
+              <div className="left-[20px] top-[16.89px] absolute justify-start text-white text-sm font-normal font-['Space_Grotesk']">
+                {role.id}
+                <br />
+                {role.name}
+              </div>
+              <div className="left-[229.18px] top-[133.12px] absolute text-right justify-end text-white text-sm font-medium font-['Space_Grotesk'] [text-shadow:_0px_2px_1px_rgb(0_0_0_/_0.25)]">
+                {isOccupied && occupiedBy
+                  ? occupiedBy.name
+                  : isSelected
+                  ? "已选择"
+                  : "可选择"}
+              </div>
+              <div className="w-72 h-40 left-0 top-0 absolute opacity-5 bg-gradient-to-r from-gray-800 to-gray-600" />
             </div>
-          )}
+          );
+        })}
+      </div>
 
-          {/* 角色选择 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {ROLES.map((role) => {
-              const isSelected =
-                selectedRole === role.id ||
-                currentPlayer?.role === role.id.toLowerCase();
-              const isOccupied =
-                selectedRoles.includes(role.id.toLowerCase()) && !isSelected;
-              const occupiedBy = players.find(
-                (p) => p.role === role.id.toLowerCase()
+      {/* 玩家状态显示 */}
+      {players.length > 0 && (
+        <div className="absolute bottom-[100px] left-[20px] right-[20px] bg-gray-800 bg-opacity-80 rounded-lg p-4">
+          <h3 className="text-white text-sm font-['Space_Grotesk'] mb-2">
+            玩家状态:
+          </h3>
+          <div className="space-y-1">
+            {players.map((player, index) => {
+              const playerRole = ROLES.find(
+                (r) => r.id.toLowerCase() === player.role
               );
-
               return (
                 <div
-                  key={role.id}
-                  className={`p-6 rounded-lg border-2 cursor-pointer transition-all ${
-                    isSelected
-                      ? "border-blue-500 bg-blue-50 shadow-lg"
-                      : isOccupied
-                      ? "border-gray-300 bg-gray-100 cursor-not-allowed opacity-60"
-                      : "border-gray-300 hover:border-gray-400 hover:shadow-md"
-                  }`}
-                  onClick={() =>
-                    !isOccupied && !hasSelectedRole && handleRoleSelect(role.id)
-                  }
+                  key={index}
+                  className="flex justify-between items-center text-xs"
                 >
-                  <div className="text-center mb-4">
-                    <div className="text-4xl mb-2">{role.icon}</div>
-                    <h3 className="text-xl font-semibold text-gray-800">
-                      {role.name}
-                    </h3>
-                  </div>
-
-                  <p className="text-gray-600 text-sm mb-4">
-                    {role.description}
-                  </p>
-
-                  {isOccupied && occupiedBy && (
-                    <div className="text-center">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${role.color}`}
-                      >
-                        已被 {occupiedBy.name} 选择
-                      </span>
-                    </div>
-                  )}
-
-                  {isSelected && (
-                    <div className="text-center">
-                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 border-blue-300 text-blue-800">
-                        ✅ 已选择
-                      </span>
-                    </div>
-                  )}
+                  <span className="text-white font-['Space_Grotesk']">
+                    {player.name} {player.name === playerName && "(你)"}
+                  </span>
+                  <span
+                    className={`font-['Space_Grotesk'] ${
+                      player.role ? "text-green-400" : "text-gray-400"
+                    }`}
+                  >
+                    {playerRole
+                      ? `${playerRole.icon} ${playerRole.name}`
+                      : "选择中..."}
+                  </span>
                 </div>
               );
             })}
           </div>
+        </div>
+      )}
 
-          {/* 玩家状态 */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-700">
-              👥 玩家状态
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {players.map((player, index) => {
-                const playerRole = ROLES.find(
-                  (r) => r.id.toLowerCase() === player.role
-                );
-                return (
-                  <div
-                    key={index}
-                    className="p-4 rounded-lg border border-gray-200 bg-gray-50 flex justify-between items-center"
-                  >
-                    <div>
-                      <div className="font-medium text-gray-700">
-                        {player.name} {player.name === playerName && "(你)"}
-                      </div>
-                      {playerRole && (
-                        <div className="text-sm text-gray-600">
-                          {playerRole.icon} {playerRole.name}
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      className={`text-sm ${
-                        player.role ? "text-green-600" : "text-gray-400"
-                      }`}
-                    >
-                      {player.role ? "✅ 已选择角色" : "⏳ 选择中"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      {/* 开始游戏按钮 */}
+      {allPlayersSelected && (
+        <div className="absolute bottom-[40px] left-[20px] right-[20px] space-y-2">
+          <div className="bg-green-600 bg-opacity-80 rounded-lg p-3">
+            <p className="text-white text-sm font-['Space_Grotesk'] text-center">
+              🎉 所有玩家已选择角色！
+            </p>
           </div>
-
-          {/* 等待提示 */}
-          {players.every((p) => p.role) && (
-            <div className="mt-8 text-center">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-800 font-medium">
-                  🎉 所有玩家已选择角色，游戏即将开始！
-                </p>
-              </div>
+          {/* 只有房主可以开始游戏 */}
+          {players.find(p => p.name === playerName)?.isHost && onStartGame && (
+            <button
+              onClick={onStartGame}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-['Space_Grotesk'] py-3 px-4 rounded-lg transition-colors"
+            >
+              开始游戏
+            </button>
+          )}
+          {/* 非房主显示等待提示 */}
+          {!players.find(p => p.name === playerName)?.isHost && (
+            <div className="bg-gray-600 bg-opacity-80 rounded-lg p-3">
+              <p className="text-white text-sm font-['Space_Grotesk'] text-center">
+                等待房主开始游戏...
+              </p>
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

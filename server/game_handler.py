@@ -86,8 +86,8 @@ class GameHandler:
                 },
             )
             
-            # 自动开始游戏
-            await GameHandler._auto_start_game(room_id)
+            # 等待角色选择完成后再开始游戏
+            # 移除自动开始游戏调用，改为在角色选择完成后开始
 
     @staticmethod
     async def _auto_start_game(room_id: str):
@@ -187,7 +187,7 @@ class GameHandler:
         if not player or not player.is_host:
             return
 
-        # 只有在大厅状态且房主操作时才能开始游戏
+        # 在大厅状态时生成背景和角色，在角色选择状态时开始第一轮游戏
         if room.game_state == GameState.LOBBY:
             # 先广播游戏开始加载消息
             await connection_manager.broadcast_to_room(
@@ -262,6 +262,10 @@ class GameHandler:
                     },
                 },
             )
+        
+        # 如果在角色选择状态且所有角色已选择，开始第一轮游戏
+        elif room.game_state == GameState.ROLE_SELECTION and room.all_players_have_roles():
+            await GameHandler._auto_start_game_after_role_selection(room_id)
 
     @staticmethod
     async def handle_role_selection(player_name: str, role: str):
@@ -319,60 +323,89 @@ class GameHandler:
 
         # 检查是否所有玩家都选择了角色
         if room.all_players_have_roles():
-            room.current_round = 1
-            logger.info(f"房间 {room_id} 所有角色已选择，开始第1轮游戏")
-
-            # 先广播回合加载状态
-            room.game_state = GameState.LOADING
+            logger.info(f"房间 {room_id} 所有角色已选择，等待开始游戏")
+            
+            # 所有玩家选择完角色后，广播角色选择完成消息，等待房主开始游戏
             await connection_manager.broadcast_to_room(
                 room_id,
                 {
-                    "type": MessageType.ROUND_LOADING,
-                    "data": {"round": 1, "message": "AI正在生成第1轮事件，请稍候..."},
-                },
-            )
-
-            # 生成第一轮事件
-            try:
-                event_data = await asyncio.get_event_loop().run_in_executor(
-                    None, room.generate_event, 1
-                )
-
-                # 保存事件和私人信息到房间状态
-                room.round_events[1] = event_data["event"]
-                room.round_private_messages[1] = event_data["private_messages"]
-                room.round_situation[1] = event_data["situation"]
-
-                logger.info(f"房间 {room_id} 第1轮事件生成成功")
-            except Exception as e:
-                logger.error(f"房间 {room_id} 生成第1轮事件失败: {str(e)}")
-                # 如果生成失败，使用默认事件
-                default_event = {
-                    "description": "团队面临第一个重要决策...",
-                    "options": [
-                        "选项1: 保守策略",
-                        "选项2: 激进策略",
-                        "选项3: 平衡策略",
-                        "选项4: 创新策略",
-                    ],
-                }
-                room.round_events[1] = default_event
-                room.round_private_messages[1] = {}
-
-            # 设置游戏状态为进行中并广播轮次开始
-            room.game_state = GameState.PLAYING
-            await connection_manager.broadcast_to_room(
-                room_id,
-                {
-                    "type": MessageType.ROUND_START,
+                    "type": MessageType.ROLES_COMPLETE,
                     "data": {
-                        "round": 1,
-                        "roundInfo": room.get_round_info(1),
-                        "roundEvent": room.round_events[1],
-                        "privateMessages": room.round_private_messages[1],
+                        "selectedRoles": room.get_selected_roles(),
+                        "players": [
+                            {
+                                "name": p.name,
+                                "is_online": p.is_online,
+                                "role": p.role,
+                                "startup_idea": p.startup_idea,
+                                "isHost": p.is_host,
+                            }
+                            for p in room.players
+                        ],
                     },
                 },
             )
+
+    @staticmethod
+    async def _auto_start_game_after_role_selection(room_id: str):
+        """角色选择完成后开始第一轮游戏（内部方法）"""
+        room = room_manager.get_room(room_id)
+        if not room:
+            return
+
+        room.current_round = 1
+        logger.info(f"房间 {room_id} 所有角色已选择，开始第1轮游戏")
+
+        # 先广播回合加载状态
+        room.game_state = GameState.LOADING
+        await connection_manager.broadcast_to_room(
+            room_id,
+            {
+                "type": MessageType.ROUND_LOADING,
+                "data": {"round": 1, "message": "AI正在生成第1轮事件，请稍候..."},
+            },
+        )
+
+        # 生成第一轮事件
+        try:
+            event_data = await asyncio.get_event_loop().run_in_executor(
+                None, room.generate_event, 1
+            )
+
+            # 保存事件和私人信息到房间状态
+            room.round_events[1] = event_data["event"]
+            room.round_private_messages[1] = event_data["private_messages"]
+            room.round_situation[1] = event_data["situation"]
+
+            logger.info(f"房间 {room_id} 第1轮事件生成成功")
+        except Exception as e:
+            logger.error(f"房间 {room_id} 生成第1轮事件失败: {str(e)}")
+            # 如果生成失败，使用默认事件
+            default_event = {
+                "description": "团队面临第一个重要决策...",
+                "options": [
+                    "选项1: 保守策略",
+                    "选项2: 激进策略",
+                    "选项3: 平衡策略",
+                    "选项4: 创新策略",
+                ],
+            }
+            room.round_events[1] = default_event
+            room.round_private_messages[1] = {}
+
+        # 设置游戏状态为进行中并广播游戏开始消息
+        room.game_state = GameState.PLAYING
+        await connection_manager.broadcast_to_room(
+            room_id,
+            {
+                "type": MessageType.GAME_STARTED,
+                "data": {
+                    "round": 1,
+                    "roundEvent": room.round_events[1],
+                    "privateMessages": room.round_private_messages[1],
+                },
+            },
+        )
 
     @staticmethod
     async def handle_game_action(player_name: str, action_data: Dict):

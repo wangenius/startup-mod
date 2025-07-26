@@ -21,6 +21,7 @@ function GamePlay({
   const [currentPhase, setCurrentPhase] = useState(GAME_PHASES.EVENT_DISPLAY);
   const [discussionTimeLeft, setDiscussionTimeLeft] = useState(120); // 讨论时间120秒
   const [selectionTimeLeft, setSelectionTimeLeft] = useState(20); // 选择时间20秒
+  const [showPrivateModal, setShowPrivateModal] = useState(false); // 控制私人信息模态框显示
 
   console.log(roundEvent);
 
@@ -120,24 +121,48 @@ function GamePlay({
 
   // 1. 展示事件阶段
   const renderEventDisplay = () => (
-    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
-      <div className="w-40 h-40 left-[201px] top-[33px] absolute">
-        <div className="w-20 h-20 left-[55px] top-[36px] absolute bg-gray-200/50 blur-[50px]" />
-        <img
-          className="w-40 h-40 left-0 top-0 absolute"
-          src="./image (1).png"
-        />
-        <div className="w-16 h-10 left-[92px] top-[122px] absolute text-right justify-start text-white text-sm font-normal font-['Space_Grotesk']">
-          {playerName}
-          <br />
-          {playerRole}
-          <br />
+    <div className="w-96 h-[874px] bg-stone-950 overflow-hidden flex flex-col">
+      {/* 顶部玩家信息区域 */}
+      <div className="flex justify-center pt-8 pb-4">
+        <div className="relative">
+          <div className="w-20 h-20 absolute left-[55px] top-[36px] bg-gray-200/50 blur-[50px]" />
+          <img
+            className="w-40 h-40"
+            src="./image (1).png"
+            alt="Player Avatar"
+          />
+          <div className="absolute bottom-0 right-0 text-right text-white text-sm font-normal font-['Space_Grotesk'] bg-black/30 px-2 py-1 rounded-lg backdrop-blur-sm">
+            <div>{playerName}</div>
+            <div className="text-xs opacity-80">{playerRole}</div>
+          </div>
         </div>
       </div>
-      <div className="left-[39px] top-[88px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal">
-        第{currentRound}阶段
-        <br />
-        {roundEvent?.event_description || "事件加载中..."}
+
+      {/* 事件信息区域 */}
+      <div className="flex-1 px-8 py-6">
+        <div className="bg-gradient-to-b from-stone-800/50 to-stone-900/50 rounded-xl p-6 border border-stone-700/50 backdrop-blur-sm">
+          <div className="text-center mb-4">
+            <div className="inline-block px-4 py-2 bg-amber-600/20 rounded-full border border-amber-500/30">
+              <span className="text-amber-300 text-lg font-normal font-['Cactus_Classical_Serif'] uppercase">
+                第{currentRound}阶段
+              </span>
+            </div>
+          </div>
+
+          <div className="text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-relaxed text-center">
+            {roundEvent?.event_description || (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>事件加载中...</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 底部装饰 */}
+      <div className="h-20 flex items-center justify-center">
+        <div className="w-16 h-1 bg-gradient-to-r from-transparent via-stone-600 to-transparent rounded-full"></div>
       </div>
     </div>
   );
@@ -161,7 +186,6 @@ function GamePlay({
       <div className="left-[39px] top-[88px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal">
         第{currentRound}阶段
         <br />
-        {roundEvent?.event_description.slice(0, 20)}...
       </div>
       <div className="left-[93px] top-[424px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
         请在和团队讨论后做出选择
@@ -169,16 +193,21 @@ function GamePlay({
 
       {/* 私人信息 */}
       {privateMessages && privateMessages[String(playerRole).toUpperCase()] && (
-        <div className="w-80 h-44 left-[38px] top-[198px] absolute">
+        <div 
+          className="w-80 h-44 left-[38px] top-[198px] absolute cursor-pointer hover:scale-105 transition-transform duration-200"
+          onClick={() => setShowPrivateModal(true)}
+        >
           <img
             className="w-full left-[-2px] top-0 absolute"
             src="./paper.png"
           />
-          <div className="w-80 left-[7px] top-[73px] absolute text-center justify-start text-zinc-800 text-lg font-normal font-['Cactus_Classical_Serif'] leading-normal [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)]">
-            {privateMessages[String(playerRole).toUpperCase()]}
+          <div className="w-80 left-[7px] top-[73px] absolute text-center justify-start text-zinc-800 text-lg font-normal font-['Cactus_Classical_Serif'] leading-normal [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)] overflow-hidden">
+            <div className="line-clamp-3">
+              {privateMessages[String(playerRole).toUpperCase()]}
+            </div>
           </div>
-          <div className="left-[68.71px] top-[30.22px] absolute opacity-60 justify-start text-neutral-600 text-base font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
-            你的信息 只有你可以看见
+          <div className="top-[30.22px] absolute opacity-60 justify-start text-neutral-600 text-base font-normal font-['Cactus_Classical_Serif'] uppercase">
+            仅你可见，点击可以展开
           </div>
           <img
             className="w-9 h-9 left-[274px] top-[135px] absolute"
@@ -191,15 +220,14 @@ function GamePlay({
       )}
 
       {/* 选项展示 */}
-      <div className="w-80 left-[36px] top-[472px] absolute inline-flex flex-col justify-start items-start gap-5">
+      <div className="w-80 left-[36px] top-[472px] absolute inline-flex flex-col justify-start items-start gap-4">
         {roundEvent?.decision_options ? (
           Object.entries(roundEvent.decision_options).map(([key, action]) => (
             <div
               key={key}
-              className="self-stretch h-16 px-10 py-2.5 relative bg-neutral-400 rounded-md flex flex-col justify-center items-center gap-2.5 overflow-hidden"
+              className="self-stretch h-16 px-10 py-2.5 relative bg-neutral-700 rounded-md flex flex-col justify-center items-center gap-2.5 overflow-hidden"
             >
-              <div className="w-80 h-16 left-[1px] top-[1px] absolute bg-neutral-800 rounded-[3px] outline outline-1 outline-offset-[-0.50px]" />
-              <div className="w-64 text-center justify-start text-neutral-400 text-lg font-normal font-['Cactus_Classical_Serif'] leading-tight">
+              <div className="w-64 text-center justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-tight">
                 {key}.{action}
               </div>
             </div>
@@ -305,17 +333,22 @@ function GamePlay({
 
       {/* 私人信息 */}
       {privateMessages && privateMessages[String(playerRole).toUpperCase()] && (
-        <div className="w-80 h-44 left-[38px] top-[198px] absolute">
+        <div 
+          className="w-80 h-44 left-[38px] top-[198px] absolute cursor-pointer hover:scale-105 transition-transform duration-200"
+          onClick={() => setShowPrivateModal(true)}
+        >
           <img className="left-[-2px] top-0 absolute" src="./paper.png" />
-          <div className="w-80 left-[7px] top-[73px] absolute text-center justify-start text-zinc-800 text-lg font-normal font-['Cactus_Classical_Serif'] leading-normal [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)]">
-            {privateMessages[String(playerRole).toUpperCase()]}
+          <div className="w-80 left-[7px] top-[73px] absolute text-center justify-start text-zinc-800 text-lg font-normal font-['Cactus_Classical_Serif'] [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)] overflow-hidden">
+            <div className="line-clamp-3 px-2">
+              {privateMessages[String(playerRole).toUpperCase()]}
+            </div>
           </div>
-          <div className="left-[68.71px] top-[30.22px] absolute opacity-60 justify-start text-neutral-600 text-base font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
-            你的信息 只有你可以看见
+          <div className="left-[20.71px] top-[30.22px] absolute opacity-60 justify-start text-neutral-600 text-base font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
+            仅你可见，点击可以展开
           </div>
           <img
             className="w-9 h-9 left-[274px] top-[135px] absolute"
-            src="./paper.png"
+            src="./print.png"
           />
           <div className="left-[281.92px] top-[145.89px] absolute origin-top-left rotate-[-10.27deg] text-center justify-start text-gray-200 text-lg font-normal font-['FZLanTingHeiS-H-GB'] leading-normal [text-shadow:_1px_1px_1px_rgb(103_43_43_/_0.57)]">
             秘
@@ -326,7 +359,6 @@ function GamePlay({
       <div className="left-[39px] top-[88px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal">
         第{currentRound}阶段
         <br />
-        {roundEvent?.event_description.slice(0, 20)}...
       </div>
 
       {!hasSubmitted ? (
@@ -351,7 +383,102 @@ function GamePlay({
     </div>
   );
 
-  return renderPhaseContent();
+  // 私人信息模态框组件
+  const renderPrivateModal = () => {
+    if (!showPrivateModal || !privateMessages || !privateMessages[String(playerRole).toUpperCase()]) {
+      return null;
+    }
+
+    return (
+      <div className="fixed inset-0 z-50">
+        <div className="w-96 h-[874px] bg-stone-950 overflow-hidden relative">
+          {/* 背景装饰 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-stone-900/20 to-stone-950"></div>
+          
+          {/* 关闭按钮 */}
+          <button 
+            className="absolute top-6 right-6 w-10 h-10 bg-stone-800/80 rounded-full border border-stone-600 flex items-center justify-center text-white hover:text-amber-300 hover:border-amber-500 transition-all duration-200 z-10"
+            onClick={() => setShowPrivateModal(false)}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* 顶部玩家信息区域 */}
+          <div className="flex justify-center pt-8 pb-4">
+            <div className="relative">
+              <div className="w-20 h-20 absolute left-[55px] top-[36px] bg-amber-400/20 blur-[50px]"></div>
+              <img
+                className="w-40 h-40"
+                src="./image (1).png"
+                alt="Player Avatar"
+              />
+              <div className="absolute bottom-0 right-0 text-right text-white text-sm font-normal font-['Space_Grotesk'] bg-black/50 px-3 py-2 rounded-lg backdrop-blur-sm border border-amber-500/30">
+                <div className="text-amber-300 font-semibold">{playerName}</div>
+                <div className="text-xs opacity-80">{playerRole}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 标题区域 */}
+          <div className="text-center mb-8">
+            <div className="inline-block px-6 py-3 bg-amber-600/20 rounded-full border border-amber-500/40 backdrop-blur-sm">
+              <span className="text-amber-300 text-xl font-normal font-['Cactus_Classical_Serif'] uppercase tracking-wider">
+                机密信息
+              </span>
+            </div>
+            <div className="text-stone-400 text-sm mt-2 font-['Cactus_Classical_Serif']">只有 {playerRole} 可以查看</div>
+          </div>
+
+          {/* 私人信息内容区域 */}
+          <div className="px-8 pb-8">
+            <div className="bg-gradient-to-b from-stone-800/60 to-stone-900/80 rounded-xl p-6 border border-stone-700/50 backdrop-blur-sm relative overflow-hidden">
+              {/* 装饰性背景图案 */}
+              <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
+                <img src="./print.png" alt="" className="w-full h-full object-contain" />
+              </div>
+              
+              {/* 内容 */}
+              <div className="relative z-10">
+                <div className="text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-relaxed text-center mb-6">
+                  {privateMessages[String(playerRole).toUpperCase()]}
+                </div>
+                
+                {/* 底部装饰线 */}
+                <div className="flex items-center justify-center gap-4 mt-6">
+                  <div className="w-8 h-px bg-gradient-to-r from-transparent to-amber-500/50"></div>
+                  <div className="flex items-center gap-2 text-amber-400">
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                    <span className="text-xs font-['Cactus_Classical_Serif'] uppercase tracking-widest">机密</span>
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="w-8 h-px bg-gradient-to-l from-transparent to-amber-500/50"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 底部提示 */}
+          <div className="absolute bottom-8 left-0 right-0 text-center">
+            <div className="text-stone-500 text-sm font-['Cactus_Classical_Serif']">
+              点击右上角关闭按钮返回游戏
+            </div>
+          </div>
+
+          {/* 边框装饰 */}
+          <div className="absolute inset-0 border border-amber-500/20 rounded-lg pointer-events-none"></div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      {renderPhaseContent()}
+      {renderPrivateModal()}
+    </>
+  );
 }
 
 export default GamePlay;

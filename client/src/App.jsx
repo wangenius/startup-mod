@@ -1,21 +1,22 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
-import GameLobby from './components/GameLobby';
-import GamePlay from './components/GamePlay';
-import GameResult from './components/GameResult';
-import RoleSelection from './components/RoleSelection';
-import RoomManager from './components/RoomManager';
-import RoundResult from './components/RoundResult';
-import WelcomePage from './components/WelcomePage';
+import GameLobby from "./components/GameLobby";
+import GamePlay from "./components/GamePlay";
+import GameResult from "./components/GameResult";
+import RoleSelection from "./components/RoleSelection";
+import RoomManager from "./components/RoomManager";
+import RoundResult from "./components/RoundResult";
+import WelcomePage from "./components/WelcomePage";
 
 // 游戏状态枚举
 const GAME_STATES = {
-  WELCOME: 'welcome',
-  ROOM_SELECTION: 'room_selection',
-  LOBBY: 'lobby',
-  ROLE_SELECTION: 'role_selection',
-  PLAYING: 'playing',
-  ROUND_RESULT: 'round_result',
-  RESULT: 'result'
+  WELCOME: "welcome",
+  ROOM_SELECTION: "room_selection",
+  LOBBY: "lobby",
+  ROLE_SELECTION: "role_selection",
+  PLAYING: "playing",
+  ROUND_RESULT: "round_result",
+  RESULT: "result",
 };
 
 // 服务器配置
@@ -56,7 +57,7 @@ function App() {
   const [waitingForPlayers, setWaitingForPlayers] = useState(false);
   const [completedRound, setCompletedRound] = useState(null);
   const [completedRoundActions, setCompletedRoundActions] = useState([]);
-  
+
   const [_, setMessages] = useState([]);
 
   const wsRef = useRef(null);
@@ -69,10 +70,10 @@ function App() {
       if (response.ok) {
         const roomStatus = await response.json();
         addMessage(`房间 ${roomId} 存在，玩家数: ${roomStatus.player_count}`);
-        
+
         // 设置游戏状态为保存的状态
         setGameState(savedGameState);
-        
+
         // 建立WebSocket连接
         connectWebSocket(playerName, roomId);
       } else {
@@ -81,7 +82,10 @@ function App() {
         setGameState(GAME_STATES.ROOM_SELECTION);
       }
     } catch (error) {
-      addMessage(`检查房间状态失败: ${error.message}，返回房间选择页面`, "error");
+      addMessage(
+        `检查房间状态失败: ${error.message}，返回房间选择页面`,
+        "error"
+      );
       clearSavedState();
       setGameState(GAME_STATES.ROOM_SELECTION);
     }
@@ -89,24 +93,24 @@ function App() {
 
   // 从localStorage加载保存的状态
   useEffect(() => {
-    const savedPlayerName = localStorage.getItem('startup_player_name');
-    const savedRoomId = localStorage.getItem('startup_room_id');
-    const savedGameState = localStorage.getItem('startup_game_state');
-    
+    const savedPlayerName = localStorage.getItem("startup_player_name");
+    const savedRoomId = localStorage.getItem("startup_room_id");
+    const savedGameState = localStorage.getItem("startup_game_state");
+
     if (savedPlayerName) {
       setPlayerName(savedPlayerName);
       addMessage(`欢迎回来, ${savedPlayerName}!`);
-      
+
       if (savedRoomId && savedGameState) {
         // 用户之前在房间中，尝试恢复状态
         setCurrentRoom(savedRoomId);
         addMessage(`正在恢复房间状态: ${savedRoomId}`);
-        
+
         // 延迟重连，确保其他函数已定义
         const reconnectTimer = setTimeout(() => {
           reconnectToRoom(savedPlayerName, savedRoomId, savedGameState);
         }, 500);
-        
+
         return () => clearTimeout(reconnectTimer);
       } else {
         // 只有玩家名称，直接跳转到房间选择页面
@@ -118,16 +122,16 @@ function App() {
 
   // 保存状态到localStorage
   const saveGameState = (playerName, roomId, gameState) => {
-    if (playerName) localStorage.setItem('startup_player_name', playerName);
-    if (roomId) localStorage.setItem('startup_room_id', roomId);
-    if (gameState) localStorage.setItem('startup_game_state', gameState);
+    if (playerName) localStorage.setItem("startup_player_name", playerName);
+    if (roomId) localStorage.setItem("startup_room_id", roomId);
+    if (gameState) localStorage.setItem("startup_game_state", gameState);
   };
 
   // 清除保存的状态
   const clearSavedState = () => {
-    localStorage.removeItem('startup_player_name');
-    localStorage.removeItem('startup_room_id');
-    localStorage.removeItem('startup_game_state');
+    localStorage.removeItem("startup_player_name");
+    localStorage.removeItem("startup_room_id");
+    localStorage.removeItem("startup_game_state");
   };
 
   // 保存用户信息到本地存储
@@ -176,28 +180,37 @@ function App() {
       if (message.type === "connection_success") {
         setWsConnected(true);
         setCurrentRoom(roomId);
-        
-        const { is_reconnect, game_state, current_round, players, selected_roles, round_info, player_actions, game_result } = message.data;
-        
+
+        const {
+          is_reconnect,
+          game_state,
+          current_round,
+          players,
+          selected_roles,
+          round_info,
+          player_actions,
+          game_result,
+        } = message.data;
+
         // 更新玩家列表
         setPlayers(players || []);
-        
+
         if (is_reconnect) {
           // 重连时恢复所有游戏状态
           addMessage(`🔄 重新连接到房间: ${roomId}`);
-          
+
           // 根据服务器返回的游戏状态设置前端状态
           switch (game_state) {
-            case 'lobby':
+            case "lobby":
               setGameState(GAME_STATES.LOBBY);
               break;
-            case 'role_selection':
+            case "role_selection":
               setGameState(GAME_STATES.ROLE_SELECTION);
               if (selected_roles) {
                 setSelectedRoles(selected_roles);
               }
               break;
-            case 'playing':
+            case "playing":
               setGameState(GAME_STATES.PLAYING);
               setCurrentRound(current_round || 1);
               if (round_info) {
@@ -207,7 +220,7 @@ function App() {
                 setPlayerActions(player_actions);
               }
               break;
-            case 'finished':
+            case "finished":
               setGameState(GAME_STATES.RESULT);
               if (game_result) {
                 setGameResult(game_result);
@@ -216,15 +229,16 @@ function App() {
             default:
               setGameState(GAME_STATES.LOBBY);
           }
-          
+
           // 保存恢复的状态
-           const currentGameState = {
-             'lobby': GAME_STATES.LOBBY,
-             'role_selection': GAME_STATES.ROLE_SELECTION,
-             'playing': GAME_STATES.PLAYING,
-             'finished': GAME_STATES.RESULT
-           }[game_state] || GAME_STATES.LOBBY;
-           saveGameState(playerName, roomId, currentGameState);
+          const currentGameState =
+            {
+              lobby: GAME_STATES.LOBBY,
+              role_selection: GAME_STATES.ROLE_SELECTION,
+              playing: GAME_STATES.PLAYING,
+              finished: GAME_STATES.RESULT,
+            }[game_state] || GAME_STATES.LOBBY;
+          saveGameState(playerName, roomId, currentGameState);
         } else {
           // 新加入房间
           setGameState(GAME_STATES.LOBBY);
@@ -256,7 +270,7 @@ function App() {
       case "player_join": {
         // 更新玩家列表，同时保持当前游戏状态
         setPlayers(message.data.players);
-        
+
         // 如果是当前玩家重连，不显示加入消息
         if (message.data.player_name !== playerName) {
           addMessage(`🎮 ${message.data.player_name} 加入房间`);
@@ -332,10 +346,10 @@ function App() {
   const handleRoomAction = async (action, roomId) => {
     try {
       const apiUrl = `${API_BASE}/rooms/${action}`;
-      addMessage(`正在${action === 'create' ? '创建' : '加入'}房间: ${apiUrl}`);
-      
+      addMessage(`正在${action === "create" ? "创建" : "加入"}房间: ${apiUrl}`);
+
       let requestBody = {};
-      if (action === 'create') {
+      if (action === "create") {
         // 创建房间不需要参数
         requestBody = {};
       } else {
@@ -345,7 +359,7 @@ function App() {
           player_name: playerName,
         };
       }
-      
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
@@ -353,10 +367,10 @@ function App() {
         },
         body: JSON.stringify(requestBody),
       });
-      
+
       const data = await response.json();
-      
-      if (action === 'create') {
+
+      if (action === "create") {
         if (data.room_id) {
           addMessage(`房间 ${data.room_id} 创建成功`);
           connectWebSocket(playerName, data.room_id);
@@ -372,7 +386,10 @@ function App() {
         }
       }
     } catch (error) {
-      addMessage(`${action === 'create' ? '创建' : '加入'}房间失败: ${error.message}`, "error");
+      addMessage(
+        `${action === "create" ? "创建" : "加入"}房间失败: ${error.message}`,
+        "error"
+      );
     }
   };
 
@@ -382,7 +399,7 @@ function App() {
       wsRef.current.send(
         JSON.stringify({
           type: "startup_idea",
-          data: { idea }
+          data: { idea },
         })
       );
     }
@@ -393,7 +410,7 @@ function App() {
     if (wsRef.current && wsConnected) {
       wsRef.current.send(
         JSON.stringify({
-          type: "start_game"
+          type: "start_game",
         })
       );
     }
@@ -405,7 +422,7 @@ function App() {
       wsRef.current.send(
         JSON.stringify({
           type: "select_role",
-          data: { role: roleId }
+          data: { role: roleId },
         })
       );
     }
@@ -417,7 +434,7 @@ function App() {
       wsRef.current.send(
         JSON.stringify({
           type: "game_action",
-          data: action
+          data: action,
         })
       );
     }
@@ -428,7 +445,7 @@ function App() {
     if (wsRef.current && wsConnected) {
       wsRef.current.send(
         JSON.stringify({
-          type: "continue_next_round"
+          type: "continue_next_round",
         })
       );
     }
@@ -443,7 +460,7 @@ function App() {
       // 发送重新开始游戏的消息到服务器
       wsRef.current.send(
         JSON.stringify({
-          type: "restart_game"
+          type: "restart_game",
         })
       );
     } else {
@@ -465,10 +482,10 @@ function App() {
     setWaitingForPlayers(false);
     setCompletedRound(null);
     setCompletedRoundActions([]);
-    
+
     // 保存新的游戏状态
     saveGameState(playerName, currentRoom, GAME_STATES.LOBBY);
-    
+
     // 添加重新开始的消息
     addMessage("🔄 游戏已重新开始，回到等待室");
   };
@@ -478,20 +495,20 @@ function App() {
     switch (gameState) {
       case GAME_STATES.WELCOME:
         return <WelcomePage onPlayerNameSet={handlePlayerNameSet} />;
-      
+
       case GAME_STATES.ROOM_SELECTION:
         return (
-          <RoomManager 
-            playerName={playerName} 
-            onRoomAction={handleRoomAction} 
+          <RoomManager
+            playerName={playerName}
+            onRoomAction={handleRoomAction}
           />
         );
-      
+
       case GAME_STATES.LOBBY: {
-        const currentPlayer = players.find(p => p.name === playerName);
+        const currentPlayer = players.find((p) => p.name === playerName);
         const isHost = currentPlayer?.isHost || false;
         return (
-          <GameLobby 
+          <GameLobby
             roomId={currentRoom}
             players={players}
             playerName={playerName}
@@ -501,20 +518,20 @@ function App() {
           />
         );
       }
-      
+
       case GAME_STATES.ROLE_SELECTION:
         return (
-          <RoleSelection 
+          <RoleSelection
             players={players}
             playerName={playerName}
             onRoleSelect={handleRoleSelect}
             selectedRoles={selectedRoles}
           />
         );
-      
+
       case GAME_STATES.PLAYING:
         return (
-          <GamePlay 
+          <GamePlay
             gameState={{ players }}
             playerName={playerName}
             currentRound={currentRound}
@@ -524,7 +541,7 @@ function App() {
             playerActions={playerActions}
           />
         );
-      
+
       case GAME_STATES.ROUND_RESULT:
         return (
           <RoundResult
@@ -535,16 +552,16 @@ function App() {
             onContinueToNextRound={handleContinueToNextRound}
           />
         );
-      
+
       case GAME_STATES.RESULT:
         return (
-          <GameResult 
+          <GameResult
             gameResult={gameResult}
             players={players}
             onRestartGame={handleRestartGame}
           />
         );
-      
+
       default:
         return <WelcomePage onPlayerNameSet={handlePlayerNameSet} />;
     }
@@ -553,12 +570,12 @@ function App() {
   return (
     <div className="App">
       {renderCurrentState()}
-      
+
       {/* 调试信息 */}
       {import.meta.env?.DEV && (
         <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white p-2 rounded text-xs max-w-xs">
           <div>状态: {gameState}</div>
-          <div>连接: {wsConnected ? '已连接' : '未连接'}</div>
+          <div>连接: {wsConnected ? "已连接" : "未连接"}</div>
           <div>房间: {currentRoom}</div>
           <div>轮次: {currentRound}/5</div>
         </div>

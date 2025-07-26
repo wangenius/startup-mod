@@ -17,27 +17,29 @@
 ### 🎯 后端技术栈
 
 **核心框架**
+
 - **FastAPI** - 高性能异步 Web 框架，提供 RESTful API
 - **WebSocket** - 实现实时双向通信，支持多人在线互动
 - **Uvicorn** - ASGI 服务器，高并发处理能力
 
 **AI 智能引擎**
+
 - **OpenAI API** - 集成大语言模型（kimi-k2）
 - **PPIO API** - 稳定的 AI 服务代理
 - **智能内容生成** - 动态生成游戏场景、事件和报告
 
-**数据层**
-- **SQLAlchemy** - 强大的 Python ORM 框架
-- **PostgreSQL** - 企业级关系型数据库
-- **Redis** - 高性能缓存和会话管理
-- **Alembic** - 数据库版本控制和迁移
+**数据存储**
 
-**安全与认证**
-- **JWT** - 基于 python-jose 的令牌认证
-- **Bcrypt** - 密码安全加密
+- **内存存储** - 游戏状态和玩家数据存储在内存中
+- **文件输出** - 游戏结果和日志保存到本地文件
+
+**网络通信**
+
 - **CORS** - 跨域资源共享支持
+- **WebSocket** - 实时双向通信协议
 
 **开发工具**
+
 - **Pydantic** - 数据验证和序列化
 - **Jinja2** - 灵活的模板引擎
 - **python-dotenv** - 环境配置管理
@@ -45,10 +47,12 @@
 ### 🎨 前端技术栈
 
 **现代化框架**
+
 - **React 19.1.0** - 最新版本的前端框架
 - **Vite** - 极速构建工具和开发服务器
 
 **样式与交互**
+
 - **Tailwind CSS 4.1.11** - 原子化 CSS 框架
 - **PostCSS** - CSS 后处理优化
 - **自定义动画** - 丰富的交互动效
@@ -56,20 +60,21 @@
 ## 🚀 快速开始
 
 ### 环境要求
+
 - Python 3.8+
 - Node.js 16+
-- PostgreSQL 12+
-- Redis 6+
 
 ### 安装步骤
 
 1. **克隆项目**
+
    ```bash
    git clone <repository-url>
    cd startup
    ```
 
 2. **后端设置**
+
    ```bash
    pip install -r requirements.txt
    cp .env.example .env
@@ -83,6 +88,136 @@
    npm install
    npm run dev
    ```
+
+## 🛠️ 开发指南
+
+### 开发环境配置
+
+**1. 环境变量配置**
+
+复制 `.env.example` 文件并重命名为 `.env`，配置以下关键参数：
+
+```bash
+# AI 服务配置
+PPIO_API_KEY=your_ppio_api_key
+PPIO_BASE_URL=your_ppio_base_url
+
+# 应用配置
+DEBUG=True
+```
+
+**注意：** 本项目使用内存存储，无需配置数据库。游戏数据在服务重启后会重置。
+
+### 开发流程
+
+**启动开发服务器**
+
+1. **后端服务**（端口 8000）
+
+   ```bash
+   # 在项目根目录
+   python main.py
+   ```
+
+2. **前端服务**（端口 5173）
+
+   ```bash
+   cd client
+   npm run dev
+   ```
+
+3. **访问应用**
+   - 前端：http://localhost:5173
+   - 后端 API：http://localhost:8000
+
+### 项目结构详解
+
+```
+├── server/                 # 后端服务
+│   ├── app.py             # FastAPI 应用入口
+│   ├── websocket_handler.py # WebSocket 处理
+│   ├── game_handler.py    # 游戏逻辑处理
+│   ├── room_manager.py    # 房间管理
+│   ├── llm.py            # AI 模型集成
+│   └── prompt/           # AI 提示词模板
+├── client/                # 前端应用
+│   ├── src/
+│   │   ├── components/   # React 组件
+│   │   ├── page/        # 页面组件
+│   │   └── App.jsx      # 主应用组件
+│   └── public/          # 静态资源
+└── outputs/             # 游戏输出文件
+```
+
+### 开发调试
+
+**后端调试**
+
+```bash
+# 启用详细日志
+export LOG_LEVEL=DEBUG
+python app.py
+
+# 使用 uvicorn 热重载
+uvicorn server.app:app --reload --host 0.0.0.0 --port 8000
+```
+
+**前端调试**
+
+```bash
+# 开发模式（热重载）
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 预览生产版本
+npm run preview
+```
+
+**WebSocket 调试**
+
+使用浏览器开发者工具的网络面板监控 WebSocket 连接，或使用专门的 WebSocket 测试工具。
+
+### 代码规范
+
+**Python 代码规范**
+
+```bash
+# 安装开发依赖
+pip install black flake8 isort
+
+# 代码格式化
+black server/
+isort server/
+
+# 代码检查
+flake8 server/
+```
+
+**JavaScript 代码规范**
+
+```bash
+# ESLint 检查
+npm run lint
+
+# 自动修复
+npm run lint:fix
+```
+
+### 常见问题
+
+**Q: WebSocket 连接失败**
+A: 检查后端服务是否正常运行，确认端口 8000 未被占用
+
+**Q: AI 响应异常**
+A: 验证 `.env` 文件中的 PPIO_API_KEY 和 PPIO_BASE_URL 配置是否正确
+
+**Q: 前端页面空白**
+A: 检查浏览器控制台错误信息，确认 API 接口可访问
+
+**Q: 游戏数据丢失**
+A: 本项目使用内存存储，服务重启后游戏数据会重置，这是正常现象
 
 ## 📁 项目结构
 
@@ -109,4 +244,4 @@
 
 ---
 
-*让创业不再是梦想，而是可以体验的游戏！* 🎯
+_让创业不再是梦想，而是可以体验的游戏！_ 🎯

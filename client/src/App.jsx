@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import GameLobby from "./components/GameLobby";
 import GamePlay from "./components/GamePlay";
 import GameResult from "./components/GameResult";
-// LoadingPage已移除，因为角色选择完成后会自动开始游戏
+import GameLoadingPage from "./components/GameLoadingPage";
 import RoundLoadingPage from "./components/RoundLoadingPage";
 import RoleSelection from "./components/RoleSelection";
 import RoomManager from "./components/RoomManager";
@@ -582,8 +582,13 @@ function App() {
       }
 
       case GAME_STATES.LOADING:
-        // 角色选择完成后会自动开始游戏，不再显示等待页面
-        return null;
+        return (
+          <GameLoadingPage
+            playerName={playerName}
+            gameBackground={gameBackground}
+            roleDefinitions={roleDefinitions}
+          />
+        );
 
       case GAME_STATES.ROUND_LOADING:
         return (

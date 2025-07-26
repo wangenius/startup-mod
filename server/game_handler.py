@@ -330,11 +330,86 @@ class GameHandler:
         if not room:
             return
 
-        room.current_round = 1
-        logger.info(f"房间 {room_id} 所有角色已选择，开始第1轮游戏")
+        logger.info(f"房间 {room_id} 所有角色已选择，开始生成游戏内容")
 
-        # 先广播回合加载状态
+        # 第一步：广播进入loading状态
         room.game_state = GameState.LOADING
+        await connection_manager.broadcast_to_room(
+            room_id,
+            {
+                "type": MessageType.GAME_LOADING,
+                "data": {"message": "AI正在生成游戏背景和角色介绍，请稍候..."},
+            },
+        )
+
+        # 第二步：生成背景故事（如果还没有生成）
+        if not room.background:
+            # 收集所有玩家的想法
+            player_ideas = [
+                p.startup_idea for p in room.get_online_players() if p.startup_idea
+            ]
+
+            try:
+                background = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    room.generate_background_from_ideas,
+                    player_ideas,
+                )
+                room.background = background
+                logger.info(f"房间 {room_id} 生成背景故事成功")
+            except Exception as e:
+                logger.error(f"房间 {room_id} 生成背景故事失败: {str(e)}")
+                # 如果生成失败，使用默认背景
+                room.background = "创业团队正在开始他们的创业之旅..."
+
+        # 第三步：生成角色介绍（如果还没有生成）
+        if not room.dynamic_roles:
+            try:
+                generated_roles = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    room.generate_roles_from_background,
+                    room.background,
+                )
+                # 转换生成的角色格式以匹配前端期望的格式
+                dynamic_roles = {}
+                for role_key, role_data in generated_roles.items():
+                    try:
+                        action = role_data.get("actions", [])
+                    except ValueError:
+                        # 如果角色键无效，使用空的actions列表
+                        action = []
+
+                    dynamic_roles[role_key] = {
+                        "name": role_data["name"],
+                        "description": role_data["description"],
+                        "actions": action,
+                    }
+                # 保存动态角色定义到房间状态中
+                room.dynamic_roles = dynamic_roles
+                logger.info(f"房间 {room_id} 生成动态角色定义成功")
+            except Exception as e:
+                logger.error(f"房间 {room_id} 生成动态角色定义失败: {str(e)}")
+                # 如果生成失败，使用默认角色定义
+                room.dynamic_roles = {}
+
+        # 第四步：广播背景故事和角色介绍
+        await connection_manager.broadcast_to_room(
+            room_id,
+            {
+                "type": MessageType.GAME_START,
+                "data": {
+                    "startup_idea": room.startup_idea,
+                    "background": room.background,
+                    "roles": room.dynamic_roles,
+                },
+            },
+        )
+
+        # 第五步：开始生成第一轮事件
+        room.current_round = 1
+        logger.info(f"房间 {room_id} 开始生成第1轮事件")
+
+        # 广播第一轮事件加载状态
         await connection_manager.broadcast_to_room(
             room_id,
             {
@@ -370,7 +445,7 @@ class GameHandler:
             room.round_events[1] = default_event
             room.round_private_messages[1] = {}
 
-        # 设置游戏状态为进行中并广播游戏开始消息
+        # 第六步：设置游戏状态为进行中并广播游戏开始消息
         room.game_state = GameState.PLAYING
         await connection_manager.broadcast_to_room(
             room_id,

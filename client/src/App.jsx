@@ -1,16 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
+import EventGeneration from "./components/EventGeneration";
+import GameLoadingPage from "./components/GameLoadingPage";
 import GameLobby from "./components/GameLobby";
 import GamePlay from "./components/GamePlay";
 import GameResult from "./components/GameResult";
-import GameLoadingPage from "./components/GameLoadingPage";
-import RoundLoadingPage from "./components/RoundLoadingPage";
+import { InitialPage } from "./components/InitialPage";
 import RoleSelection from "./components/RoleSelection";
 import RoomManager from "./components/RoomManager";
-import RoundResult from "./components/RoundResult";
+import RoundLoadingPage from "./components/RoundLoadingPage";
 import WelcomePage from "./components/WelcomePage";
-import EventGeneration from "./components/EventGeneration";
-import { InitialPage } from "./components/InitialPage";
 
 // 游戏状态枚举
 const GAME_STATES = {

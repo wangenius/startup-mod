@@ -14,7 +14,7 @@ app = FastAPI(title="创业模拟器 API", version="1.0.0")
 # 添加CORS中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 在生产环境中应该设置具体的域名
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,14 +45,18 @@ async def create_room(request: CreateRoomRequest):
         if existing_room:
             # 房间已存在，直接加入
             room = room_manager.join_room(request.player_name, request.room_id)
-            logger.info(f"Player {request.player_name} joined existing room: {request.room_id}")
+            logger.info(
+                f"Player {request.player_name} joined existing room: {request.room_id}"
+            )
         else:
             # 房间不存在，创建新房间
             room = room_manager.create_room(request.room_id)
             # 创建者自动加入房间
             room = room_manager.join_room(request.player_name, request.room_id)
-            logger.info(f"Created room: {request.room_id} and added player: {request.player_name}")
-        
+            logger.info(
+                f"Created room: {request.room_id} and added player: {request.player_name}"
+            )
+
         return {"room_id": request.room_id, "success": True}
     except Exception as e:
         logger.error(f"Error creating/joining room: {e}")

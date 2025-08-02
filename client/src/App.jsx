@@ -1,16 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
+import EventGeneration from "./components/EventGeneration";
+import GameLoadingPage from "./components/GameLoadingPage";
 import GameLobby from "./components/GameLobby";
 import GamePlay from "./components/GamePlay";
 import GameResult from "./components/GameResult";
-import GameLoadingPage from "./components/GameLoadingPage";
-import RoundLoadingPage from "./components/RoundLoadingPage";
+import { InitialPage } from "./components/InitialPage";
 import RoleSelection from "./components/RoleSelection";
 import RoomManager from "./components/RoomManager";
-import RoundResult from "./components/RoundResult";
+import RoundLoadingPage from "./components/RoundLoadingPage";
 import WelcomePage from "./components/WelcomePage";
-import EventGeneration from "./components/EventGeneration";
-import { InitialPage } from "./components/InitialPage";
 
 // 游戏状态枚举
 const GAME_STATES = {
@@ -29,24 +28,28 @@ const GAME_STATES = {
 
 // 服务器配置
 const getServerConfig = () => {
+  const isDev = import.meta.env.DEV;
   const envHost = import.meta.env.VITE_SERVER_HOST;
   const envPort = import.meta.env.VITE_SERVER_PORT || "8000";
 
-  if (envHost) {
-    return { host: envHost, port: envPort };
-  }
+  if (isDev)
+  {
+    if (envHost) {
+      return { host: envHost, port: envPort };
+    }
 
-  const currentHost = window.location.hostname;
-  if (currentHost === "localhost" || currentHost === "127.0.0.1") {
-    return { host: "localhost", port: "8000" };
+    const currentHost = window.location.hostname;
+    if (currentHost === "localhost" || currentHost === "127.0.0.1") {
+      return { http: `http://localhost:8000`, ws: `ws://localhost:8000` };
+    }
+
+    return { http: `http://${currentHost}:8000`, ws: `ws://${currentHost}:8000` };
   }
-  return { host: currentHost, port: "8000" };
+  
+  return { http: `/api`, ws: `/api` }
 };
 
-const { host: SERVER_HOST, port: SERVER_PORT } = getServerConfig();
-const API_BASE = `http://${SERVER_HOST}:${SERVER_PORT}`;
-const WS_BASE = `ws://${SERVER_HOST}:${SERVER_PORT}`;
-
+const { http: API_BASE, ws: WS_BASE } = getServerConfig();
 console.log("服务器配置:", { API_BASE, WS_BASE });
 
 function App() {

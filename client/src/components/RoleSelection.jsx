@@ -58,14 +58,13 @@ function RoleSelection({
 
           return (
             <div key={role.id} className="relative flex flex-col items-center">
-              {/* 选中状态的背景高亮 */}
               {isSelected && (
                 <div className="absolute inset-0 bg-yellow-400/20 rounded-lg animate-pulse -z-10" />
               )}
 
               <div className="relative w-full">
                 <img
-                  className={`w-full h-32 object-cover cursor-pointer transition-all duration-300 rounded-lg ${
+                  className={`w-full h-auto object-contain cursor-pointer transition-all duration-300 rounded-lg ${
                     isOccupied
                       ? "opacity-30"
                       : isSelected

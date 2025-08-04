@@ -32,8 +32,7 @@ const getServerConfig = () => {
   const envHost = import.meta.env.VITE_SERVER_HOST;
   const envPort = import.meta.env.VITE_SERVER_PORT || "8000";
 
-  if (isDev)
-  {
+  if (isDev) {
     if (envHost) {
       return { host: envHost, port: envPort };
     }
@@ -43,10 +42,13 @@ const getServerConfig = () => {
       return { http: `http://localhost:8000`, ws: `ws://localhost:8000` };
     }
 
-    return { http: `http://${currentHost}:8000`, ws: `ws://${currentHost}:8000` };
+    return {
+      http: `http://${currentHost}:8000`,
+      ws: `ws://${currentHost}:8000`,
+    };
   }
-  
-  return { http: `/api`, ws: `/api` }
+
+  return { http: `/api`, ws: `/api` };
 };
 
 const { http: API_BASE, ws: WS_BASE } = getServerConfig();
@@ -77,7 +79,7 @@ function App() {
 
   // 初始化背景音乐
   useEffect(() => {
-    const audio = new Audio('/背景音效.mp3');
+    const audio = new Audio("/背景音效.mp3");
     audio.loop = true;
     audio.volume = 0.3; // 设置音量为30%
     audioRef.current = audio;
@@ -86,22 +88,22 @@ function App() {
     const playAudio = async () => {
       try {
         await audio.play();
-        console.log('背景音乐开始播放');
+        console.log("背景音乐开始播放");
       } catch (error) {
-        console.log('自动播放失败，需要用户交互后播放:', error);
+        console.log("自动播放失败，需要用户交互后播放:", error);
         // 添加点击事件监听器，在用户首次交互时播放音乐
         const handleUserInteraction = async () => {
           try {
             await audio.play();
-            console.log('用户交互后背景音乐开始播放');
-            document.removeEventListener('click', handleUserInteraction);
-            document.removeEventListener('keydown', handleUserInteraction);
+            console.log("用户交互后背景音乐开始播放");
+            document.removeEventListener("click", handleUserInteraction);
+            document.removeEventListener("keydown", handleUserInteraction);
           } catch (err) {
-            console.log('播放失败:', err);
+            console.log("播放失败:", err);
           }
         };
-        document.addEventListener('click', handleUserInteraction);
-        document.addEventListener('keydown', handleUserInteraction);
+        document.addEventListener("click", handleUserInteraction);
+        document.addEventListener("keydown", handleUserInteraction);
       }
     };
 
@@ -708,19 +710,10 @@ function App() {
   };
 
   return (
-    <div className="App">
-      {renderCurrentState()}
-
-      {/* 调试信息 */}
-      {/* {import.meta.env?.DEV && (
-        <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white p-2 rounded text-xs max-w-xs">
-          <div>状态: {gameState}</div>
-          <div>连接: {wsConnected ? "已连接" : "未连接"}</div>
-          <div>房间: {currentRoom}</div>
-          <div>轮次: {currentRound}/5</div>
-          <button onClick={handleRestartGame}>重新开始</button>
-        </div>
-      )} */}
+    <div className="min-h-screen bg-stone-950 flex flex-col">
+      <div className="flex-1 w-full max-w-md mx-auto">
+        {renderCurrentState()}
+      </div>
     </div>
   );
 }

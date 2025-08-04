@@ -78,7 +78,7 @@ function EventGeneration({
   };
 
   return (
-    <div className="w-96 h-[874px] relative bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden mx-auto flex items-center justify-center">
+    <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden relative flex items-center justify-center p-4">
       {/* 背景动画效果 */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
@@ -87,14 +87,14 @@ function EventGeneration({
       </div>
       
       {/* 主要内容 */}
-      <div className="relative z-10 px-8">
+      <div className="relative z-10 w-full max-w-md mx-auto text-center">
         {renderAnimation()}
-        
-        {/* 玩家信息 */}
-        <div className="absolute top-8 right-8 text-right">
-          <div className="text-sm text-gray-400">玩家</div>
-          <div className="text-lg font-semibold text-white">{playerName}</div>
-        </div>
+      </div>
+      
+      {/* 玩家信息 */}
+      <div className="absolute top-4 right-4 text-right">
+        <div className="text-sm text-gray-400">玩家</div>
+        <div className="text-lg font-semibold text-white">{playerName}</div>
       </div>
     </div>
   );

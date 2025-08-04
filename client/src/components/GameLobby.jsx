@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Button } from "./Button";
 
 function GameLobby({ onStartupIdeaSubmit }) {
   const [startupIdea, setStartupIdea] = useState("");
@@ -27,51 +28,49 @@ function GameLobby({ onStartupIdeaSubmit }) {
   };
 
   return (
-    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
-      <div className="w-80 min-h-7 left-[50px] top-[357px] absolute">
-        <div className="left-[8px] top-[2px] absolute text-left justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
-          <textarea
-            value={startupIdea}
-            onChange={(e) => setStartupIdea(e.target.value)}
-            placeholder="你的项目是..."
-            className="bg-transparent border-none outline-none text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed placeholder-white w-full resize-none overflow-hidden"
-            disabled={ideaSubmitted}
-            rows={1}
-            style={{
-              minHeight: '28px',
-              height: 'auto'
-            }}
-            onInput={(e) => {
-              e.target.style.height = 'auto';
-              e.target.style.height = e.target.scrollHeight + 'px';
-            }}
-          />
-        </div>
-        <div className="w-px h-7 left-0 top-0 absolute bg-zinc-300 animate-pulse" />
-      </div>
-
-      {!startupIdea.trim() && (
-        <button
-          onClick={handleRandomGenerate}
-          className="left-[169px] top-[531px] absolute text-center justify-start text-white/70 text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed hover:text-white transition-colors cursor-pointer"
-        >
-          随机生成
-        </button>
-      )}
-      <div className="p-1.5 left-[117px] top-[710px] absolute bg-zinc-300/80 rounded-[20px] shadow-[0px_1.5px_0px_0px_rgba(255,255,255,0.10)] shadow-[inset_0px_0px_2px_0px_rgba(0,0,0,0.08)] inline-flex justify-start items-start gap-2.5">
-        <button
-          onClick={handleSubmitIdea}
-          disabled={!startupIdea.trim() || ideaSubmitted}
-          className="px-14 py-5 rounded-2xl shadow-[0px_2.767256498336792px_2.2138051986694336px_0px_rgba(0,0,0,0.12)] shadow-[0px_6.650102138519287px_5.32008171081543px_0px_rgba(0,0,0,0.13)] shadow-[0px_12.521552085876465px_10.017241477966309px_0px_rgba(0,0,0,0.14)] shadow-[0px_22.3363094329834px_17.869047164916992px_0px_rgba(0,0,0,0.14)] shadow-[0px_41.777610778808594px_33.422088623046875px_0px_rgba(0,0,0,0.15)] shadow-[0px_100px_80px_0px_rgba(0,0,0,0.15)] shadow-[0px_3px_3px_0px_rgba(0,0,0,0.14)] shadow-[0px_2.767256498336792px_2.2138051986694336px_0px_rgba(0,0,0,0.12)] shadow-[inset_0px_-3px_0px_0px_rgba(8,8,8,1.00)] shadow-[inset_0px_1px_0px_0px_rgba(255,255,255,0.30)] flex justify-center items-center gap-5 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-200/90 transition-colors"
-        >
-          <div className="text-center justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-none">
-            {ideaSubmitted ? "已提交" : "确认"}
+    <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col justify-center p-6">
+      <div className="flex flex-col items-center space-y-8">
+        {/* 输入区域 */}
+        <div className="w-full max-w-sm">
+          <div className="relative">
+            <div className="w-1 h-8 bg-zinc-300 animate-pulse absolute left-0 top-0" />
+            <textarea
+              value={startupIdea}
+              onChange={(e) => setStartupIdea(e.target.value)}
+              placeholder="你的项目是..."
+              className="bg-transparent border-none outline-none text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed placeholder-white w-full resize-none overflow-hidden pl-4"
+              disabled={ideaSubmitted}
+              rows={3}
+              style={{
+                minHeight: "80px",
+                height: "auto",
+              }}
+              onInput={(e) => {
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
+              }}
+            />
           </div>
-        </button>
-      </div>
-      <div className="w-10 h-10 left-[179px] top-[485px] absolute bg-zinc-900 rounded-lg outline outline-1 outline-offset-[-1px] outline-stone-500 overflow-hidden">
-        <div className="w-5 h-5 left-[10px] top-[10px] absolute overflow-hidden">
-          <div className="w-4 h-4 left-[1.80px] top-[1.80px] absolute bg-white" />
+        </div>
+
+        {/* 随机生成按钮 */}
+        {!startupIdea.trim() && (
+          <button
+            onClick={handleRandomGenerate}
+            className="text-white/70 text-base font-normal font-['Cactus_Classical_Serif'] hover:text-white transition-colors cursor-pointer"
+          >
+            随机生成
+          </button>
+        )}
+
+        {/* 确认按钮 */}
+        <div className="mt-8">
+          <Button
+            onClick={handleSubmitIdea}
+            disabled={!startupIdea.trim() || ideaSubmitted}
+          >
+            {ideaSubmitted ? "已提交" : "确认"}
+          </Button>
         </div>
       </div>
     </div>

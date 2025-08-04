@@ -1,6 +1,6 @@
 function RoundLoadingPage() {
   return (
-    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden flex flex-col items-center justify-center">
+    <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col items-center justify-center p-4">
       <video
         className="w-24 h-24"
         src="/videoExport-2025-07-26@12-08-48.606-540x540@60fps.mp4"

@@ -134,29 +134,29 @@ function GamePlay({
 
   // 1. 展示事件阶段
   const renderEventDisplay = () => (
-    <div className="w-96 h-[874px] bg-stone-950 overflow-hidden flex flex-col">
+    <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
       {/* 顶部玩家信息区域 */}
-      <div className="flex justify-center pt-8 pb-4">
+      <div className="flex justify-center pt-4 pb-6">
         <div className="relative">
-          <div className="w-20 h-20 absolute left-[55px] top-[36px] bg-gray-200/50 blur-[50px]" />
+          <div className="w-16 h-16 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-200/50 blur-[30px]" />
           <img
-            className="w-40 h-40"
+            className="w-32 h-32 relative z-10"
             src={getRoleImage(playerRole)}
             alt="Player Avatar"
           />
-          <div className="absolute bottom-0 right-0 text-right text-white text-sm font-normal font-['Space_Grotesk'] bg-black/30 px-2 py-1 rounded-lg backdrop-blur-sm">
-            <div>{playerName}</div>
+          <div className="absolute -bottom-2 -right-2 text-right text-white text-sm font-normal font-['Space_Grotesk'] bg-black/50 px-3 py-2 rounded-lg backdrop-blur-sm">
+            <div className="font-medium">{playerName}</div>
             <div className="text-xs opacity-80">{playerRole}</div>
           </div>
         </div>
       </div>
 
       {/* 事件信息区域 */}
-      <div className="flex-1 px-8 py-6">
-        <div className="bg-gradient-to-b from-stone-800/50 to-stone-900/50 rounded-xl p-6 border border-stone-700/50 backdrop-blur-sm">
-          <div className="text-center mb-4">
+      <div className="flex-1 px-4 py-6">
+        <div className="bg-gradient-to-b from-stone-800/50 to-stone-900/50 rounded-xl p-6 border border-stone-700/50 backdrop-blur-sm max-w-sm mx-auto">
+          <div className="text-center mb-6">
             <div 
-              className="inline-block px-4 py-2 bg-amber-600/20 rounded-full border border-amber-500/30 cursor-pointer hover:bg-amber-600/30 hover:border-amber-500/50 transition-all duration-200"
+              className="inline-block px-6 py-3 bg-amber-600/20 rounded-full border border-amber-500/30 cursor-pointer hover:bg-amber-600/30 hover:border-amber-500/50 transition-all duration-200"
               onClick={() => setShowEventModal(true)}
             >
               <span className="text-amber-300 text-lg font-normal font-['Cactus_Classical_Serif'] uppercase">
@@ -177,7 +177,7 @@ function GamePlay({
       </div>
 
       {/* 底部装饰 */}
-      <div className="h-20 flex items-center justify-center">
+      <div className="h-16 flex items-center justify-center">
         <div className="w-16 h-1 bg-gradient-to-r from-transparent via-stone-600 to-transparent rounded-full"></div>
       </div>
     </div>
@@ -185,88 +185,97 @@ function GamePlay({
 
   // 2. 展示信息和选项阶段
   const renderInfoAndOptions = () => (
-    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
-      <div className="w-40 h-40 left-[201px] top-[33px] absolute">
-        <div className="w-20 h-20 left-[55px] top-[36px] absolute bg-gray-200/50 blur-[50px]" />
-        <img
-          className="w-40 h-40 left-0 top-0 absolute"
-          src={getRoleImage(playerRole)}
-        />
-        <div className="w-16 h-10 left-[92px] top-[122px] absolute text-right justify-start text-white text-sm font-normal font-['Space_Grotesk']">
-          {playerName}
-          <br />
-          {playerRole}
-          <br />
+    <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
+      {/* 顶部玩家信息和阶段标题 */}
+      <div className="flex flex-col items-center pt-4 pb-6">
+        <div className="relative mb-4">
+          <div className="w-16 h-16 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-200/50 blur-[30px]" />
+          <img
+            className="w-32 h-32 relative z-10"
+            src={getRoleImage(playerRole)}
+            alt="Player Avatar"
+          />
+          <div className="absolute -bottom-2 -right-2 text-right text-white text-sm font-normal font-['Space_Grotesk'] bg-black/50 px-3 py-2 rounded-lg backdrop-blur-sm">
+            <div className="font-medium">{playerName}</div>
+            <div className="text-xs opacity-80">{playerRole}</div>
+          </div>
         </div>
-      </div>
-      <div 
-        className="left-[39px] top-[88px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal cursor-pointer hover:opacity-80 transition-opacity duration-200"
-        onClick={() => setShowEventModal(true)}
-      >
-        第{currentRound}阶段
-        <br />
-      </div>
-      <div className="left-[93px] top-[424px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
-        请在和团队讨论后做出选择
+        
+        <div 
+          className="opacity-60 text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase cursor-pointer hover:opacity-80 transition-opacity duration-200"
+          onClick={() => setShowEventModal(true)}
+        >
+          第{currentRound}阶段
+        </div>
       </div>
 
       {/* 私人信息 */}
       {privateMessages && privateMessages[String(playerRole).toUpperCase()] && (
-        <div 
-          className="w-80 h-44 left-[38px] top-[198px] absolute cursor-pointer hover:scale-105 transition-transform duration-200"
-          onClick={() => setShowPrivateModal(true)}
-        >
-          <img
-            className="w-full left-[-2px] top-0 absolute"
-            src="./paper.png"
-          />
-          <div className="w-80 left-[7px] top-[73px] absolute text-center justify-start text-zinc-800 text-lg font-normal font-['Cactus_Classical_Serif'] leading-normal [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)] overflow-hidden">
-            <div className="line-clamp-3">
-              {privateMessages[String(playerRole).toUpperCase()]}
+        <div className="px-4 mb-6">
+          <div 
+            className="relative cursor-pointer hover:scale-105 transition-transform duration-200 max-w-sm mx-auto"
+            onClick={() => setShowPrivateModal(true)}
+          >
+            <img
+              className="w-full"
+              src="./paper.png"
+              alt="私人信息"
+            />
+            <div className="absolute inset-0 flex flex-col justify-center items-center p-4">
+              <div className="text-neutral-600 text-sm font-normal font-['Cactus_Classical_Serif'] uppercase mb-2 opacity-60">
+                仅你可见，点击可以展开
+              </div>
+              <div className="text-zinc-800 text-base font-normal font-['Cactus_Classical_Serif'] text-center line-clamp-3">
+                {privateMessages[String(playerRole).toUpperCase()]}
+              </div>
+              <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                <img className="w-6 h-6" src="./print.png" alt="印章" />
+                <div className="text-gray-200 text-sm font-normal transform -rotate-12">秘</div>
+              </div>
             </div>
-          </div>
-          <div className="top-[30.22px] absolute opacity-60 justify-start text-neutral-600 text-base font-normal font-['Cactus_Classical_Serif'] uppercase">
-            仅你可见，点击可以展开
-          </div>
-          <img
-            className="w-9 h-9 left-[274px] top-[135px] absolute"
-            src="./print.png"
-          />
-          <div className="left-[281.92px] top-[145.89px] absolute origin-top-left rotate-[-10.27deg] text-center justify-start text-gray-200 text-lg font-normal font-['FZLanTingHeiS-H-GB'] leading-normal [text-shadow:_1px_1px_1px_rgb(103_43_43_/_0.57)]">
-            秘
           </div>
         </div>
       )}
 
-      {/* 选项展示 */}
-      <div className="w-80 left-[36px] top-[472px] absolute inline-flex flex-col justify-start items-start gap-4">
-        {roundEvent?.decision_options ? (
-          Object.entries(roundEvent.decision_options).map(([key, action]) => (
-            <div
-              key={key}
-              className="self-stretch h-16 px-10 py-2.5 relative bg-neutral-700 rounded-md flex flex-col justify-center items-center gap-2.5 overflow-hidden"
-            >
-              <div className="w-64 text-center justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-tight">
-                {key}.{action}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-white text-center">选项加载中...</div>
-        )}
+      {/* 提示文字 */}
+      <div className="text-center mb-6">
+        <div className="opacity-60 text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase">
+          请在和团队讨论后做出选择
+        </div>
       </div>
 
-      <div
-        className="w-24 h-16 left-[153px] top-[763px] absolute cursor-pointer"
-        onClick={goToSelection}
-      >
-        <div className="left-0 top-[46px] absolute text-center justify-start text-white/70 text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
-          进入讨论
+      {/* 选项展示 */}
+      <div className="flex-1 px-4">
+        <div className="max-w-sm mx-auto space-y-4">
+          {roundEvent?.decision_options ? (
+            Object.entries(roundEvent.decision_options).map(([key, action]) => (
+              <div
+                key={key}
+                className="w-full h-16 px-6 py-3 bg-neutral-700 rounded-lg flex items-center justify-center"
+              >
+                <div className="text-white text-lg font-normal font-['Cactus_Classical_Serif'] text-center">
+                  {key}. {action}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-white text-center">选项加载中...</div>
+          )}
         </div>
-        <div className="w-10 h-10 left-[26px] top-0 absolute bg-zinc-900 rounded-lg outline outline-1 outline-offset-[-1px] outline-stone-500 overflow-hidden">
-          <div className="w-5 h-5 left-[10px] top-[10px] absolute overflow-hidden">
-            <div className="w-4 h-3 left-[1.48px] top-[3.63px] absolute bg-gray-200" />
-            <div className="w-1.5 h-1.5 left-[6.48px] top-[6.56px] absolute bg-gray-200" />
+      </div>
+
+      {/* 进入讨论按钮 */}
+      <div className="flex flex-col items-center pb-8">
+        <div
+          className="cursor-pointer flex flex-col items-center gap-2 hover:opacity-80 transition-opacity"
+          onClick={goToSelection}
+        >
+          <div className="w-10 h-10 bg-zinc-900 rounded-lg border border-stone-500 flex items-center justify-center">
+            <div className="w-4 h-3 bg-gray-200 rounded-sm" />
+            <div className="w-1.5 h-1.5 bg-gray-200 rounded-full ml-1" />
+          </div>
+          <div className="text-white/70 text-base font-normal font-['Cactus_Classical_Serif']">
+            进入讨论
           </div>
         </div>
       </div>
@@ -275,133 +284,162 @@ function GamePlay({
 
   // 3. 讨论环节
   const renderDiscussion = () => (
-    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
-      <div className="w-10 h-10 left-[337px] top-[792px] absolute rounded-full border border-white" />
-      <div className="left-[341px] top-[800px] absolute text-center justify-start text-white text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
-        {discussionTimeLeft}s
+    <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
+      {/* 标题区域 */}
+      <div className="text-center pt-8 pb-6">
+        <div className="opacity-60 text-white text-xl font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal">
+          开会时间
+          <br />
+          请轮流发表意见
+        </div>
       </div>
 
-      <div className="left-[131px] top-[114px] absolute opacity-60 text-center justify-start text-white text-xl font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal">
-        开会时间
-        <br />
-        请轮流发表意见
+      {/* 中间讨论图片区域 */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <img
+          className="w-full max-w-sm h-auto"
+          src="./askAI.png"
+          alt="讨论场景"
+        />
       </div>
 
-      <img
-        className="w-96 h-64 left-[-14px] top-[428px] absolute"
-        src="./askAI.png"
-      />
-      <button
-        onClick={() => setCurrentPhase(GAME_PHASES.SELECTION)}
-        className="w-full text-white py-3 px-4 rounded-lg absolute bottom-[100px] mx-auto font-medium"
-      >
-        进入选择阶段
-      </button>
+      {/* 底部按钮和倒计时 */}
+      <div className="flex flex-col items-center pb-8 space-y-4">
+        <button
+          onClick={() => setCurrentPhase(GAME_PHASES.SELECTION)}
+          className="px-8 py-3 bg-gradient-to-b from-zinc-700 to-zinc-800 text-white rounded-lg font-medium hover:from-zinc-600 hover:to-zinc-700 transition-all duration-200"
+        >
+          进入选择阶段
+        </button>
+        
+        {/* 倒计时 */}
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full border border-white flex items-center justify-center">
+            <span className="text-white text-base font-normal font-['Cactus_Classical_Serif']">
+              {discussionTimeLeft}s
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
   // 4. 选择确认阶段
   const renderSelection = () => (
-    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
-      <div className="left-[136px] top-[426px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
-        请做出{playerRole}的选择
-      </div>
-
-      <div className="w-80 left-[35px] top-[480px] absolute inline-flex flex-col justify-start items-start gap-4">
-        {roundEvent?.decision_options ? (
-          Object.entries(roundEvent.decision_options).map(([key, action]) => (
-            <div
-              key={key}
-              className={`self-stretch h-16 px-10 py-2.5 relative rounded-md flex flex-col justify-center items-center gap-2.5 overflow-hidden cursor-pointer transition-all ${
-                selectedAction === key ? "bg-white" : "bg-neutral-700"
-              }`}
-              onClick={() => setSelectedAction(key)}
-            >
-              <div
-                className={`w-64 text-center justify-start text-lg font-normal font-['Cactus_Classical_Serif'] leading-tight relative z-10 ${
-                  selectedAction === key ? "text-black" : "text-white"
-                }`}
-              >
-                {key}.{action}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-white text-center">选项加载中...</div>
-        )}
-      </div>
-
-      <div className="w-10 h-10 left-[340px] top-[784px] absolute rounded-full border border-white" />
-      <div className="left-[349px] top-[792px] absolute text-center justify-start text-white text-base font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
-        {selectionTimeLeft}s
-      </div>
-
-      <div className="w-40 h-40 left-[201px] top-[33px] absolute">
-        <div className="w-20 h-20 left-[55px] top-[36px] absolute bg-gray-200/50 blur-[50px]" />
-        <img
-          className="w-40 h-40 left-0 top-0 absolute"
-          src={getRoleImage(playerRole)}
-        />
-        <div className="w-16 h-10 left-[92px] top-[122px] absolute text-right justify-start text-white text-sm font-normal font-['Space_Grotesk']">
-          {playerName}
-          <br />
-          {playerRole}
-          <br />
+    <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
+      {/* 顶部玩家信息 */}
+      <div className="flex flex-col items-center pt-4 pb-6">
+        <div className="relative mb-4">
+          <div className="w-20 h-20 bg-gray-200/50 blur-[50px] absolute top-9 left-14" />
+          <img
+            className="w-32 h-32 relative z-10"
+            src={getRoleImage(playerRole)}
+            alt={playerRole}
+          />
+          <div className="text-center text-white text-sm font-normal font-['Space_Grotesk'] mt-2">
+            {playerName}
+            <br />
+            {playerRole}
+          </div>
+        </div>
+        
+        <div 
+          className="opacity-60 text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal cursor-pointer hover:opacity-80 transition-opacity duration-200 mb-4"
+          onClick={() => setShowEventModal(true)}
+        >
+          第{currentRound}阶段
         </div>
       </div>
 
       {/* 私人信息 */}
       {privateMessages && privateMessages[String(playerRole).toUpperCase()] && (
-        <div 
-          className="w-80 h-44 left-[38px] top-[198px] absolute cursor-pointer hover:scale-105 transition-transform duration-200"
-          onClick={() => setShowPrivateModal(true)}
-        >
-          <img className="left-[-2px] top-0 absolute" src="./paper.png" />
-          <div className="w-80 left-[7px] top-[73px] absolute text-center justify-start text-zinc-800 text-lg font-normal font-['Cactus_Classical_Serif'] [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)] overflow-hidden">
-            <div className="line-clamp-3 px-2">
-              {privateMessages[String(playerRole).toUpperCase()]}
+        <div className="px-4 mb-6">
+          <div 
+            className="relative cursor-pointer hover:scale-105 transition-transform duration-200 max-w-sm mx-auto"
+            onClick={() => setShowPrivateModal(true)}
+          >
+            <img className="w-full h-auto" src="./paper.png" alt="私人信息" />
+            <div className="absolute inset-0 flex flex-col justify-center items-center p-4">
+              <div className="opacity-60 text-neutral-600 text-sm font-normal font-['Cactus_Classical_Serif'] uppercase leading-none mb-2">
+                仅你可见，点击可以展开
+              </div>
+              <div className="text-center text-zinc-800 text-base font-normal font-['Cactus_Classical_Serif'] [text-shadow:_1px_1px_2px_rgb(142_142_142_/_0.25)] overflow-hidden">
+                <div className="line-clamp-3 px-2">
+                  {privateMessages[String(playerRole).toUpperCase()]}
+                </div>
+              </div>
+              <div className="absolute bottom-2 right-2 flex items-center">
+                <img className="w-6 h-6" src="./print.png" alt="印章" />
+                <div className="ml-1 text-gray-200 text-sm font-normal font-['FZLanTingHeiS-H-GB'] [text-shadow:_1px_1px_1px_rgb(103_43_43_/_0.57)]">
+                  秘
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="left-[20.71px] top-[30.22px] absolute opacity-60 justify-start text-neutral-600 text-base font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
-            仅你可见，点击可以展开
-          </div>
-          <img
-            className="w-9 h-9 left-[274px] top-[135px] absolute"
-            src="./print.png"
-          />
-          <div className="left-[281.92px] top-[145.89px] absolute origin-top-left rotate-[-10.27deg] text-center justify-start text-gray-200 text-lg font-normal font-['FZLanTingHeiS-H-GB'] leading-normal [text-shadow:_1px_1px_1px_rgb(103_43_43_/_0.57)]">
-            秘
           </div>
         </div>
       )}
 
-      <div 
-        className="left-[39px] top-[88px] absolute opacity-60 justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal cursor-pointer hover:opacity-80 transition-opacity duration-200"
-        onClick={() => setShowEventModal(true)}
-      >
-        第{currentRound}阶段
-        <br />
+      {/* 选择提示 */}
+      <div className="text-center mb-6">
+        <div className="opacity-60 text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-none">
+          请做出{playerRole}的选择
+        </div>
       </div>
 
-      {!hasSubmitted ? (
-        <div className="p-1.5 left-[117px] top-[757px] absolute bg-zinc-300/80 rounded-[20px] shadow-[0px_1.5px_0px_0px_rgba(255,255,255,0.10)] shadow-[inset_0px_0px_2px_0px_rgba(0,0,0,0.08)] inline-flex justify-start items-start gap-2.5">
-          <div
-            className="px-14 py-5 rounded-2xl shadow-[0px_2.767256498336792px_2.2138051986694336px_0px_rgba(0,0,0,0.12)] shadow-[0px_6.650102138519287px_5.32008171081543px_0px_rgba(0,0,0,0.13)] shadow-[0px_12.521552085876465px_10.017241477966309px_0px_rgba(0,0,0,0.14)] shadow-[0px_22.3363094329834px_17.869047164916992px_0px_rgba(0,0,0,0.14)] shadow-[0px_41.777610778808594px_33.422088623046875px_0px_rgba(0,0,0,0.15)] shadow-[0px_100px_80px_0px_rgba(0,0,0,0.15)] shadow-[0px_3px_3px_0px_rgba(0,0,0,0.14)] shadow-[0px_2.767256498336792px_2.2138051986694336px_0px_rgba(0,0,0,0.12)] shadow-[inset_0px_-3px_0px_0px_rgba(8,8,8,1.00)] shadow-[inset_0px_1px_0px_0px_rgba(255,255,255,0.30)] flex justify-center items-center gap-5 overflow-hidden cursor-pointer"
+      {/* 选择选项 */}
+      <div className="flex-1 px-4 mb-6">
+        <div className="flex flex-col gap-4 max-w-sm mx-auto">
+          {roundEvent?.decision_options ? (
+            Object.entries(roundEvent.decision_options).map(([key, action]) => (
+              <div
+                key={key}
+                className={`h-16 px-6 py-2.5 rounded-md flex items-center justify-center cursor-pointer transition-all ${
+                  selectedAction === key ? "bg-white" : "bg-neutral-700"
+                }`}
+                onClick={() => setSelectedAction(key)}
+              >
+                <div
+                  className={`text-center text-lg font-normal font-['Cactus_Classical_Serif'] leading-tight ${
+                    selectedAction === key ? "text-black" : "text-white"
+                  }`}
+                >
+                  {key}.{action}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-white text-center">选项加载中...</div>
+          )}
+        </div>
+      </div>
+
+      {/* 底部按钮和倒计时 */}
+      <div className="flex flex-col items-center pb-8 space-y-4">
+        {!hasSubmitted ? (
+          <button
+            className="px-14 py-5 bg-zinc-300/80 rounded-2xl text-white text-lg font-normal font-['Cactus_Classical_Serif'] hover:bg-zinc-300/90 transition-all duration-200 shadow-lg"
             onClick={handleSubmitAction}
           >
-            <div className="text-center justify-start text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-none">
-              确认
+            确认
+          </button>
+        ) : (
+          <div className="text-center">
+            <div className="text-green-400 text-xl font-bold mb-2">
+              ✅ 已提交选择
             </div>
+            <div className="text-white">等待其他玩家...</div>
+          </div>
+        )}
+        
+        {/* 倒计时 */}
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full border border-white flex items-center justify-center">
+            <span className="text-white text-base font-normal font-['Cactus_Classical_Serif']">
+              {selectionTimeLeft}s
+            </span>
           </div>
         </div>
-      ) : (
-        <div className="absolute bottom-[100px] left-[48px] w-80 text-center">
-          <div className="text-green-400 text-xl font-bold mb-2">
-            ✅ 已提交选择
-          </div>
-          <div className="text-white">等待其他玩家...</div>
-        </div>
-      )}
+      </div>
     </div>
   );
 

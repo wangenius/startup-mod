@@ -102,28 +102,19 @@ function PrinterEffect({
   reportSections,
 }) {
   return (
-    <div className="w-96 h-[874px] relative bg-stone-950 overflow-hidden">
+    <div className="min-h-screen w-full bg-stone-950 overflow-hidden relative flex flex-col">
       {/* 打印机背景 */}
-      <div className="absolute bottom-0 -left-8 -right-8 transform z-0">
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md z-0">
         <img
-          className="w-full object-contain"
+          className="w-full h-auto object-contain"
           src="./print.png"
           alt="打印机"
         />
       </div>
 
-      {/* 顶部装饰背景
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-[515px] h-[500px] overflow-hidden opacity-30">
-        <img
-          className="w-full h-full object-cover mix-blend-lighten"
-          src="./background2.png"
-          alt="背景装饰"
-        />
-      </div> */}
-
       {/* 初始状态内容 */}
       {!isPrinting && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+        <div className="flex-1 flex flex-col items-center justify-center z-10 p-4">
           <div className="text-center text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed mb-8">
             五个月过去了
             <br />
@@ -142,14 +133,14 @@ function PrinterEffect({
 
       {/* 打印中的纸张效果 */}
       {isPrinting && (
-        <div className="absolute inset-0 flex items-center justify-center z-10">
+        <div className="flex-1 flex items-center justify-center z-10 p-4">
           {/* 打印纸张 */}
           <div
-            className="w-80 bg-gradient-to-b from-gray-200 to-zinc-100 rounded-sm relative transition-all duration-300 ease-out"
+            className="w-full max-w-sm bg-gradient-to-b from-gray-200 to-zinc-100 rounded-sm relative transition-all duration-300 ease-out mx-auto"
             style={{
               height: `${Math.min(printProgress * 6, 600)}px`,
               transform: `translateY(${Math.max(
-                300 - printProgress * 3,
+                150 - printProgress * 1.5,
                 0
               )}px)`,
             }}
@@ -236,7 +227,7 @@ function PrinterEffect({
 
       {/* 底部标题和重新开始按钮 - 打印完成后显示 */}
       {printProgress >= 100 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-20 animate-fadeIn">
+        <div className="flex flex-col items-center justify-center pb-8 text-center z-20 animate-fadeIn">
           <div className="text-zinc-600 text-2xl font-normal font-['FZLanTingHeiS-H-GB'] leading-loose tracking-[3.84px] mb-4">
             创业报告
           </div>

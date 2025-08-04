@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Button } from "./Button";
 
 // 游戏阶段枚举
 const GAME_PHASES = {
@@ -27,11 +28,11 @@ function GamePlay({
   // 根据角色名称确定对应的图片
   const getRoleImage = (role) => {
     const roleImageMap = {
-      "CEO": "/image (2).png",
-      "CTO": "/image (3).png",
-      "CMO": "/image (4).png",
-      "COO": "/image (1).png",
-      "CPO": "/image (5).png",
+      CEO: "/image (2).png",
+      CTO: "/image (3).png",
+      CMO: "/image (4).png",
+      COO: "/image (1).png",
+      CPO: "/image (5).png",
     };
     return roleImageMap[role.toUpperCase()] || "/image (2).png"; // 默认使用CEO图片
   };
@@ -155,7 +156,7 @@ function GamePlay({
       <div className="flex-1 px-4 py-6">
         <div className="bg-gradient-to-b from-stone-800/50 to-stone-900/50 rounded-xl p-6 border border-stone-700/50 backdrop-blur-sm max-w-sm mx-auto">
           <div className="text-center mb-6">
-            <div 
+            <div
               className="inline-block px-6 py-3 bg-amber-600/20 rounded-full border border-amber-500/30 cursor-pointer hover:bg-amber-600/30 hover:border-amber-500/50 transition-all duration-200"
               onClick={() => setShowEventModal(true)}
             >
@@ -200,8 +201,8 @@ function GamePlay({
             <div className="text-xs opacity-80">{playerRole}</div>
           </div>
         </div>
-        
-        <div 
+
+        <div
           className="opacity-60 text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase cursor-pointer hover:opacity-80 transition-opacity duration-200"
           onClick={() => setShowEventModal(true)}
         >
@@ -212,15 +213,11 @@ function GamePlay({
       {/* 私人信息 */}
       {privateMessages && privateMessages[String(playerRole).toUpperCase()] && (
         <div className="px-4 mb-6">
-          <div 
+          <div
             className="relative cursor-pointer hover:scale-105 transition-transform duration-200 max-w-sm mx-auto"
             onClick={() => setShowPrivateModal(true)}
           >
-            <img
-              className="w-full"
-              src="./paper.png"
-              alt="私人信息"
-            />
+            <img className="w-full" src="./paper.png" alt="私人信息" />
             <div className="absolute inset-0 flex flex-col justify-center items-center p-4">
               <div className="text-neutral-600 text-sm font-normal font-['Cactus_Classical_Serif'] uppercase mb-2 opacity-60">
                 仅你可见，点击可以展开
@@ -230,7 +227,9 @@ function GamePlay({
               </div>
               <div className="absolute bottom-4 right-4 flex items-center gap-2">
                 <img className="w-6 h-6" src="./print.png" alt="印章" />
-                <div className="text-gray-200 text-sm font-normal transform -rotate-12">秘</div>
+                <div className="text-gray-200 text-sm font-normal transform -rotate-12">
+                  秘
+                </div>
               </div>
             </div>
           </div>
@@ -311,7 +310,7 @@ function GamePlay({
         >
           进入选择阶段
         </button>
-        
+
         {/* 倒计时 */}
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full border border-white flex items-center justify-center">
@@ -342,8 +341,8 @@ function GamePlay({
             {playerRole}
           </div>
         </div>
-        
-        <div 
+
+        <div
           className="opacity-60 text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal cursor-pointer hover:opacity-80 transition-opacity duration-200 mb-4"
           onClick={() => setShowEventModal(true)}
         >
@@ -354,7 +353,7 @@ function GamePlay({
       {/* 私人信息 */}
       {privateMessages && privateMessages[String(playerRole).toUpperCase()] && (
         <div className="px-4 mb-6">
-          <div 
+          <div
             className="relative cursor-pointer hover:scale-105 transition-transform duration-200 max-w-sm mx-auto"
             onClick={() => setShowPrivateModal(true)}
           >
@@ -416,12 +415,7 @@ function GamePlay({
       {/* 底部按钮和倒计时 */}
       <div className="flex flex-col items-center pb-8 space-y-4">
         {!hasSubmitted ? (
-          <button
-            className="px-14 py-5 bg-zinc-300/80 rounded-2xl text-white text-lg font-normal font-['Cactus_Classical_Serif'] hover:bg-zinc-300/90 transition-all duration-200 shadow-lg"
-            onClick={handleSubmitAction}
-          >
-            确认
-          </button>
+          <Button onClick={handleSubmitAction}>确认</Button>
         ) : (
           <div className="text-center">
             <div className="text-green-400 text-xl font-bold mb-2">
@@ -430,7 +424,7 @@ function GamePlay({
             <div className="text-white">等待其他玩家...</div>
           </div>
         )}
-        
+
         {/* 倒计时 */}
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full border border-white flex items-center justify-center">
@@ -454,14 +448,24 @@ function GamePlay({
         <div className="w-96 h-[874px] bg-stone-950 overflow-hidden relative">
           {/* 背景装饰 */}
           <div className="absolute inset-0 bg-gradient-to-b from-stone-900/20 to-stone-950"></div>
-          
+
           {/* 关闭按钮 */}
-          <button 
+          <button
             className="absolute top-6 right-6 w-10 h-10 bg-stone-800/80 rounded-full border border-stone-600 flex items-center justify-center text-white hover:text-amber-300 hover:border-amber-500 transition-all duration-200 z-10"
             onClick={() => setShowEventModal(false)}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
 
@@ -472,7 +476,9 @@ function GamePlay({
                 第{currentRound}阶段详情
               </span>
             </div>
-            <div className="text-stone-400 text-sm mt-2 font-['Cactus_Classical_Serif']">事件详细描述</div>
+            <div className="text-stone-400 text-sm mt-2 font-['Cactus_Classical_Serif']">
+              事件详细描述
+            </div>
           </div>
 
           {/* 事件详情内容区域 */}
@@ -482,19 +488,21 @@ function GamePlay({
               <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
                 <div className="w-full h-full bg-amber-400/10 rounded-full blur-xl"></div>
               </div>
-              
+
               {/* 内容 */}
               <div className="relative z-10">
                 <div className="text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-relaxed text-center mb-6">
                   {roundEvent.event_description}
                 </div>
-                
+
                 {/* 底部装饰线 */}
                 <div className="flex items-center justify-center gap-4 mt-6">
                   <div className="w-8 h-px bg-gradient-to-r from-transparent to-amber-500/50"></div>
                   <div className="flex items-center gap-2 text-amber-400">
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                    <span className="text-xs font-['Cactus_Classical_Serif'] uppercase tracking-widest">事件</span>
+                    <span className="text-xs font-['Cactus_Classical_Serif'] uppercase tracking-widest">
+                      事件
+                    </span>
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
                   </div>
                   <div className="w-8 h-px bg-gradient-to-l from-transparent to-amber-500/50"></div>
@@ -519,7 +527,11 @@ function GamePlay({
 
   // 私人信息模态框组件
   const renderPrivateModal = () => {
-    if (!showPrivateModal || !privateMessages || !privateMessages[String(playerRole).toUpperCase()]) {
+    if (
+      !showPrivateModal ||
+      !privateMessages ||
+      !privateMessages[String(playerRole).toUpperCase()]
+    ) {
       return null;
     }
 
@@ -528,14 +540,24 @@ function GamePlay({
         <div className="w-96 h-[874px] bg-stone-950 overflow-hidden relative">
           {/* 背景装饰 */}
           <div className="absolute inset-0 bg-gradient-to-b from-stone-900/20 to-stone-950"></div>
-          
+
           {/* 关闭按钮 */}
-          <button 
+          <button
             className="absolute top-6 right-6 w-10 h-10 bg-stone-800/80 rounded-full border border-stone-600 flex items-center justify-center text-white hover:text-amber-300 hover:border-amber-500 transition-all duration-200 z-10"
             onClick={() => setShowPrivateModal(false)}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
 
@@ -562,7 +584,9 @@ function GamePlay({
                 机密信息
               </span>
             </div>
-            <div className="text-stone-400 text-sm mt-2 font-['Cactus_Classical_Serif']">只有 {playerRole} 可以查看</div>
+            <div className="text-stone-400 text-sm mt-2 font-['Cactus_Classical_Serif']">
+              只有 {playerRole} 可以查看
+            </div>
           </div>
 
           {/* 私人信息内容区域 */}
@@ -570,21 +594,27 @@ function GamePlay({
             <div className="bg-gradient-to-b from-stone-800/60 to-stone-900/80 rounded-xl p-6 border border-stone-700/50 backdrop-blur-sm relative overflow-hidden">
               {/* 装饰性背景图案 */}
               <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
-                <img src="./print.png" alt="" className="w-full h-full object-contain" />
+                <img
+                  src="./print.png"
+                  alt=""
+                  className="w-full h-full object-contain"
+                />
               </div>
-              
+
               {/* 内容 */}
               <div className="relative z-10">
                 <div className="text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-relaxed text-center mb-6">
                   {privateMessages[String(playerRole).toUpperCase()]}
                 </div>
-                
+
                 {/* 底部装饰线 */}
                 <div className="flex items-center justify-center gap-4 mt-6">
                   <div className="w-8 h-px bg-gradient-to-r from-transparent to-amber-500/50"></div>
                   <div className="flex items-center gap-2 text-amber-400">
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                    <span className="text-xs font-['Cactus_Classical_Serif'] uppercase tracking-widest">机密</span>
+                    <span className="text-xs font-['Cactus_Classical_Serif'] uppercase tracking-widest">
+                      机密
+                    </span>
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
                   </div>
                   <div className="w-8 h-px bg-gradient-to-l from-transparent to-amber-500/50"></div>

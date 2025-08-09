@@ -479,9 +479,11 @@ class GameHandler:
 
         # 构建行动数据
         action = {
-            "player": player_name,
-            "role": player.role,
+            "playerName": player_name,  # 修正为前端期望的字段名
+            "actionType": "decision",   # 添加前端期望的字段
             "action": action_data.get("action"),
+            "round": room.current_round,  # 添加轮次信息
+            "role": player.role,
             "reason": action_data.get("reason"),
             "timestamp": datetime.now().isoformat(),
         }

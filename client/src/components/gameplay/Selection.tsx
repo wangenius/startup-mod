@@ -10,6 +10,8 @@ interface SelectionProps {
   selectedAction: string;
   hasSubmitted: boolean;
   selectionTimeLeft: number;
+  players: any[];
+  playerActions: any[];
   getRoleImage: (role: string) => string;
   onShowEventModal: () => void;
   onShowPrivateModal: () => void;
@@ -29,12 +31,22 @@ export const Selection = ({
   selectedAction,
   hasSubmitted,
   selectionTimeLeft,
+  players,
+  playerActions,
   getRoleImage,
   onShowEventModal,
   onShowPrivateModal,
   onSelectAction,
   onSubmitAction
 }: SelectionProps) => {
+  // 调试信息
+  console.log('Selection组件数据:', {
+    players,
+    playerActions,
+    currentRound,
+    playerName
+  });
+
   return (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
       {/* 顶部玩家信息 */}
@@ -90,6 +102,78 @@ export const Selection = ({
           请做出{playerRole}的选择
         </div>
       </div>
+
+      {/* 所有玩家选择状态 */}
+      {players && players.length > 0 && (
+        <div className="flex justify-center mb-6">
+          <div className="flex gap-4 p-4 bg-black/20 rounded-lg backdrop-blur-sm">
+            {players.map((player) => {
+                const hasPlayerSubmitted = playerActions?.some(
+                  action => action.playerName === player.name && action.round === currentRound
+                );
+                const isCurrentPlayer = player.name === playerName;
+                
+                console.log(`玩家 ${player.name} 提交状态:`, hasPlayerSubmitted, {
+                  playerActions,
+                  currentRound,
+                  playerName: player.name,
+                  isCurrentPlayer,
+                  matchingActions: playerActions?.filter(action => action.playerName === player.name),
+                  allPlayerNames: playerActions?.map(action => action.playerName),
+                  actionRounds: playerActions?.map(action => action.round)
+                });
+                
+                return (
+                  <div key={player.name} className={`flex flex-col items-center space-y-2 ${
+                    isCurrentPlayer ? 'relative' : ''
+                  }`}>
+                    {/* 当前玩家标识 */}
+                    {isCurrentPlayer && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-blue-500 rounded-full">
+                        <span className="text-white text-xs font-bold">我</span>
+                      </div>
+                    )}
+                    <div className="relative">
+                      <img 
+                        className={`w-16 h-16 rounded-full border-2 transition-all duration-300 ${
+                          isCurrentPlayer ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
+                        }`}
+                        style={{
+                          borderColor: hasPlayerSubmitted ? '#10b981' : (isCurrentPlayer ? '#3b82f6' : '#6b7280'),
+                          opacity: hasPlayerSubmitted ? 1 : (isCurrentPlayer ? 1 : 0.6)
+                        }}
+                        src={getRoleImage(player.role || '')} 
+                        alt={player.role} 
+                      />
+                      {hasPlayerSubmitted && (
+                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✓</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-sm font-normal font-['Cactus_Classical_Serif'] ${
+                        isCurrentPlayer ? 'text-blue-300 font-medium' : 'text-white'
+                      }`}>
+                        {player.name}
+                      </div>
+                      <div className={`text-xs font-normal font-['Cactus_Classical_Serif'] ${
+                        isCurrentPlayer ? 'text-blue-200' : 'text-gray-300'
+                      }`}>
+                        {player.role}
+                      </div>
+                      <div className={`text-xs font-normal font-['Cactus_Classical_Serif'] ${
+                        hasPlayerSubmitted ? 'text-green-400' : (isCurrentPlayer ? 'text-blue-300' : 'text-yellow-400')
+                      }`}>
+                        {hasPlayerSubmitted ? '已提交' : (isCurrentPlayer ? '等待确认' : '选择中...')}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
       {/* 选择选项 */}
       <div className="flex-1 px-4 mb-6">

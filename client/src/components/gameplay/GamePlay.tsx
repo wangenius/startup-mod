@@ -41,6 +41,7 @@ function GamePlay() {
     currentRound,
     roundEvent,
     privateMessages,
+    playerActions,
     handleActionSubmit,
   } = useGame();
 
@@ -208,6 +209,8 @@ function GamePlay() {
             selectedAction={selectedAction}
             hasSubmitted={hasSubmitted}
             selectionTimeLeft={selectionTimeLeft}
+            players={players}
+            playerActions={playerActions}
             getRoleImage={getRoleImage}
             onShowEventModal={() => setShowEventModal(true)}
             onShowPrivateModal={() => setShowPrivateModal(true)}

@@ -162,7 +162,7 @@ class GameRoom(BaseModel):
 
         if round_num in self.round_actions:
             for action in self.round_actions[round_num]:
-                submitted_players.add(action.get("player"))
+                submitted_players.add(action.get("playerName"))  # 修正字段名
 
         return len(submitted_players) == len(online_players)
 
@@ -175,7 +175,7 @@ class GameRoom(BaseModel):
         self.round_actions[round_num] = [
             a
             for a in self.round_actions[round_num]
-            if a.get("player") != action.get("player")
+            if a.get("playerName") != action.get("playerName")  # 修正字段名
         ]
 
         self.round_actions[round_num].append(action)

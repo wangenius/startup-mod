@@ -1,4 +1,22 @@
-export function Button({ onClick, disabled, children }) {
+import { ReactNode, MouseEventHandler } from "react";
+
+/**
+ * 按钮组件属性
+ */
+interface ButtonProps {
+  /** 点击事件处理函数 */
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  /** 是否禁用 */
+  disabled?: boolean;
+  /** 子内容 */
+  children: ReactNode;
+}
+
+/**
+ * 自定义按钮组件
+ * 具有特定样式和背景图片的按钮
+ */
+export function Button({ onClick, disabled, children }: ButtonProps) {
   return (
     <button
       onClick={onClick}

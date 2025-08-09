@@ -1,15 +1,34 @@
-import { useState, useEffect } from "react";
-import { Button } from "./Button";
+import { useEffect, useState } from "react";
+import type { PlayerAction } from "../const/const";
 import { useGame } from "../context/GameContextCore";
+import { Button } from "./Button";
 
-// 游戏阶段枚举
+/**
+ * 游戏阶段枚举
+ */
 const GAME_PHASES = {
   EVENT_DISPLAY: "event_display", // 1. 展示事件
   INFO_AND_OPTIONS: "info_and_options", // 2. 展示信息和选项
   DISCUSSION: "discussion", // 3. 讨论环节
   SELECTION: "selection", // 4. 选择确认
-};
+} as const;
 
+/**
+ * 游戏阶段类型
+ */
+type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES];
+
+/**
+ * 角色图片映射类型
+ */
+interface RoleImageMap {
+  [key: string]: string;
+}
+
+/**
+ * 游戏玩法组件
+ * 管理游戏的不同阶段和玩家交互
+ */
 function GamePlay() {
   const {
     players,
@@ -17,19 +36,26 @@ function GamePlay() {
     currentRound,
     roundEvent,
     privateMessages,
-    handleActionSubmit: onActionSubmit,
+    handleActionSubmit,
   } = useGame();
-  const [selectedAction, setSelectedAction] = useState("");
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [currentPhase, setCurrentPhase] = useState(GAME_PHASES.EVENT_DISPLAY);
-  const [discussionTimeLeft, setDiscussionTimeLeft] = useState(120); // 讨论时间120秒
-  const [selectionTimeLeft, setSelectionTimeLeft] = useState(20); // 选择时间20秒
-  const [showPrivateModal, setShowPrivateModal] = useState(false); // 控制私人信息模态框显示
-  const [showEventModal, setShowEventModal] = useState(false); // 控制事件详情模态框显示
 
-  // 根据角色名称确定对应的图片
-  const getRoleImage = (role) => {
-    const roleImageMap = {
+  const [selectedAction, setSelectedAction] = useState<string>("");
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
+  const [currentPhase, setCurrentPhase] = useState<GamePhase>(
+    GAME_PHASES.EVENT_DISPLAY
+  );
+  const [discussionTimeLeft, setDiscussionTimeLeft] = useState<number>(120); // 讨论时间120秒
+  const [selectionTimeLeft, setSelectionTimeLeft] = useState<number>(20); // 选择时间20秒
+  const [showPrivateModal, setShowPrivateModal] = useState<boolean>(false); // 控制私人信息模态框显示
+  const [showEventModal, setShowEventModal] = useState<boolean>(false); // 控制事件详情模态框显示
+
+  /**
+   * 根据角色名称确定对应的图片
+   * @param role - 角色名称
+   * @returns 图片路径
+   */
+  const getRoleImage = (role: string): string => {
+    const roleImageMap: RoleImageMap = {
       CEO: "/image (2).png",
       CTO: "/image (3).png",
       CMO: "/image (4).png",
@@ -52,15 +78,15 @@ function GamePlay() {
 
   // 阶段自动切换逻辑
   useEffect(() => {
-    let timer;
+    let timer: number;
 
     if (currentPhase === GAME_PHASES.EVENT_DISPLAY) {
-      // 事件展示阶段，3秒后自动切换到信息和选项阶段
+      // 事件展示阶段，10秒后自动切换到信息和选项阶段
       timer = setTimeout(() => {
         setCurrentPhase(GAME_PHASES.INFO_AND_OPTIONS);
       }, 10000);
     } else if (currentPhase === GAME_PHASES.INFO_AND_OPTIONS) {
-      // 信息和选项阶段，5秒后自动切换到讨论阶段
+      // 信息和选项阶段，20秒后自动切换到讨论阶段
       timer = setTimeout(() => {
         setCurrentPhase(GAME_PHASES.DISCUSSION);
       }, 20000);
@@ -71,7 +97,7 @@ function GamePlay() {
 
   // 讨论阶段倒计时
   useEffect(() => {
-    let timer;
+    let timer: number;
 
     if (currentPhase === GAME_PHASES.DISCUSSION && discussionTimeLeft > 0) {
       timer = setTimeout(() => {
@@ -90,7 +116,7 @@ function GamePlay() {
 
   // 选择阶段倒计时
   useEffect(() => {
-    let timer;
+    let timer: number;
 
     if (currentPhase === GAME_PHASES.SELECTION && selectionTimeLeft > 0) {
       timer = setTimeout(() => {
@@ -101,25 +127,37 @@ function GamePlay() {
     return () => clearTimeout(timer);
   }, [currentPhase, selectionTimeLeft]);
 
-  // 手动切换到选择阶段
-  const goToSelection = () => {
+  /**
+   * 手动切换到选择阶段
+   */
+  const goToSelection = (): void => {
     setCurrentPhase(GAME_PHASES.SELECTION);
   };
 
-  const handleSubmitAction = () => {
+  /**
+   * 处理提交行动
+   */
+  const handleSubmitAction = (): void => {
     if (selectedAction) {
-      onActionSubmit({
+      const action: PlayerAction = {
+        playerName: playerName,
+        actionType: "decision",
         action: selectedAction,
-        reason: "",
-      });
+        round: currentRound,
+        timestamp: new Date().toISOString(),
+      };
+      handleActionSubmit(action);
       setHasSubmitted(true);
     }
   };
 
   const currentPlayer = players?.find((p) => p.name === playerName);
-  const playerRole = currentPlayer?.role;
+  const playerRole = currentPlayer?.role || "";
 
-  // 渲染不同阶段的组件
+  /**
+   * 渲染不同阶段的组件
+   * @returns JSX元素
+   */
   const renderPhaseContent = () => {
     switch (currentPhase) {
       case GAME_PHASES.EVENT_DISPLAY:
@@ -135,7 +173,9 @@ function GamePlay() {
     }
   };
 
-  // 1. 展示事件阶段
+  /**
+   * 1. 展示事件阶段
+   */
   const renderEventDisplay = () => (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
       {/* 顶部玩家信息区域 */}
@@ -186,7 +226,9 @@ function GamePlay() {
     </div>
   );
 
-  // 2. 展示信息和选项阶段
+  /**
+   * 2. 展示信息和选项阶段
+   */
   const renderInfoAndOptions = () => (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
       {/* 顶部玩家信息和阶段标题 */}
@@ -255,7 +297,7 @@ function GamePlay() {
                 className="w-full h-16 px-6 py-3 bg-neutral-700 rounded-lg flex items-center justify-center"
               >
                 <div className="text-white text-lg font-normal font-['Cactus_Classical_Serif'] text-center">
-                  {key}. {action}
+                  {key}. {String(action)}
                 </div>
               </div>
             ))
@@ -283,7 +325,9 @@ function GamePlay() {
     </div>
   );
 
-  // 3. 讨论环节
+  /**
+   * 3. 讨论环节
+   */
   const renderDiscussion = () => (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
       {/* 标题区域 */}
@@ -325,7 +369,9 @@ function GamePlay() {
     </div>
   );
 
-  // 4. 选择确认阶段
+  /**
+   * 4. 选择确认阶段
+   */
   const renderSelection = () => (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col p-4">
       {/* 顶部玩家信息 */}
@@ -404,7 +450,7 @@ function GamePlay() {
                     selectedAction === key ? "text-black" : "text-white"
                   }`}
                 >
-                  {key}.{action}
+                  {key}.{String(action)}
                 </div>
               </div>
             ))
@@ -439,7 +485,9 @@ function GamePlay() {
     </div>
   );
 
-  // 事件详情模态框组件
+  /**
+   * 事件详情模态框组件
+   */
   const renderEventModal = () => {
     if (!showEventModal || !roundEvent) {
       return null;
@@ -527,7 +575,9 @@ function GamePlay() {
     );
   };
 
-  // 私人信息模态框组件
+  /**
+   * 私人信息模态框组件
+   */
   const renderPrivateModal = () => {
     if (
       !showPrivateModal ||

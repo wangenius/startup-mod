@@ -1,12 +1,44 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useGame } from "../context/GameContextCore";
 
+/**
+ * 当前视图类型
+ */
+type CurrentView = "loading" | "video1" | "video2";
+
+/**
+ * Video1组件属性
+ */
+interface Video1Props {
+  /** 视频播放结束回调 */
+  onEnded: () => void;
+}
+
+/**
+ * 角色信息接口
+ */
+interface RoleInfo {
+  /** 角色ID */
+  id: string;
+  /** 角色名称 */
+  name: string;
+  /** 角色描述 */
+  description: string;
+}
+
+/**
+ * 游戏加载页面组件
+ * 显示玩家角色信息和过渡动画
+ */
 function GameLoadingPage() {
   const { playerName, roleDefinitions } = useGame();
-  const [currentView, setCurrentView] = useState('loading'); // 'loading', 'video1', 'video2'
+  const [currentView, setCurrentView] = useState<CurrentView>("loading");
 
-  // 获取当前玩家的角色信息
-  const getCurrentPlayerRole = () => {
+  /**
+   * 获取当前玩家的角色信息
+   * @returns 角色信息或null
+   */
+  const getCurrentPlayerRole = (): RoleInfo | null => {
     if (!roleDefinitions || !playerName) return null;
 
     // 查找当前玩家选择的角色
@@ -29,7 +61,7 @@ function GameLoadingPage() {
   useEffect(() => {
     // 2秒后切换到video1
     const timer = setTimeout(() => {
-      setCurrentView('video1');
+      setCurrentView("video1");
     }, 2000);
 
     return () => {
@@ -37,17 +69,19 @@ function GameLoadingPage() {
     };
   }, []);
 
-  // 处理video1播放结束后切换到video2
-  const handleVideo1Ended = () => {
-    setCurrentView('video2');
+  /**
+   * 处理video1播放结束后切换到video2
+   */
+  const handleVideo1Ended = (): void => {
+    setCurrentView("video2");
   };
 
   // 根据当前状态渲染不同的视图
-  if (currentView === 'video1') {
+  if (currentView === "video1") {
     return <Video1 onEnded={handleVideo1Ended} />;
   }
-  
-  if (currentView === 'video2') {
+
+  if (currentView === "video2") {
     return <Video2 />;
   }
 
@@ -65,6 +99,7 @@ function GameLoadingPage() {
         <img
           className="w-full max-w-xs h-48 object-cover rounded-lg"
           src="/CEO.png"
+          alt="CEO角色"
         />
 
         {/* 角色名称 */}
@@ -103,7 +138,10 @@ function GameLoadingPage() {
   );
 }
 
-function Video1({ onEnded }) {
+/**
+ * Video1组件 - 第一个过渡视频
+ */
+function Video1({ onEnded }: Video1Props) {
   return (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden relative flex flex-col">
       {/* 状态栏 */}
@@ -117,7 +155,7 @@ function Video1({ onEnded }) {
           <div className="w-5 h-2 bg-white rounded-sm" />
         </div>
       </div>
-      
+
       {/* 视频 */}
       <video
         className="w-full flex-1 object-cover"
@@ -127,7 +165,7 @@ function Video1({ onEnded }) {
         controls={false}
         onEnded={onEnded}
       />
-      
+
       {/* 文字描述 */}
       <div className="p-6 text-center text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-loose">
         故事始于一阵短暂而耀眼的黑客松胜利。那是一场持续48小时不眠不休的鏖战，在评委念出他们团队名字的瞬间，一切的疲惫都化作了震耳欲聋的欢呼与香槟泡沫。
@@ -136,6 +174,9 @@ function Video1({ onEnded }) {
   );
 }
 
+/**
+ * Video2组件 - 第二个过渡视频
+ */
 function Video2() {
   return (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden relative flex flex-col">
@@ -150,7 +191,7 @@ function Video2() {
           <div className="w-5 h-2 bg-white rounded-sm" />
         </div>
       </div>
-      
+
       {/* 视频 */}
       <video
         className="w-full flex-1 object-cover"
@@ -159,7 +200,7 @@ function Video2() {
         muted
         controls={false}
       />
-      
+
       {/* 文字描述 */}
       <div className="p-6 text-center text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-loose">
         但优胜的甘甜味道很快在舌尖散去。真正的战场，是在深夜的办公间——伴随着速溶咖啡的苦涩和白板上反复修改的草图。团队带着黑客松的奖金，和对未来的憧憬，在这里开始锻造他们的第一个产品原型。

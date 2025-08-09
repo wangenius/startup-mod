@@ -1,20 +1,31 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { Button } from "./Button";
 import { useGame } from "../context/GameContextCore";
 
+/**
+ * 游戏大厅组件
+ * 用户输入创业想法的页面
+ */
 function GameLobby() {
   const { handleStartupIdeaSubmit } = useGame();
-  const [startupIdea, setStartupIdea] = useState("");
-  const [ideaSubmitted, setIdeaSubmitted] = useState(false);
+  const handleSubmit = handleStartupIdeaSubmit;
+  const [startupIdea, setStartupIdea] = useState<string>("");
+  const [ideaSubmitted, setIdeaSubmitted] = useState<boolean>(false);
 
-  const handleSubmitIdea = () => {
+  /**
+   * 处理提交创业想法
+   */
+  const handleSubmitIdea = (): void => {
     if (startupIdea.trim()) {
-      handleStartupIdeaSubmit(startupIdea.trim());
+      handleSubmit(startupIdea.trim());
       setIdeaSubmitted(true);
     }
   };
 
-  const handleRandomGenerate = () => {
+  /**
+   * 随机生成创业想法
+   */
+  const handleRandomGenerate = (): void => {
     const randomIdeas = [
       "没有，谢谢",
       "基于区块链的数字身份验证系统",
@@ -27,6 +38,16 @@ function GameLobby() {
     const randomIdea =
       randomIdeas[Math.floor(Math.random() * randomIdeas.length)];
     setStartupIdea(randomIdea);
+  };
+
+  /**
+   * 处理文本框输入事件，自动调整高度
+   * @param e - 表单事件
+   */
+  const handleTextareaInput = (e: FormEvent<HTMLTextAreaElement>): void => {
+    const target = e.target as HTMLTextAreaElement;
+    target.style.height = "auto";
+    target.style.height = target.scrollHeight + "px";
   };
 
   return (
@@ -47,10 +68,7 @@ function GameLobby() {
                 minHeight: "80px",
                 height: "auto",
               }}
-              onInput={(e) => {
-                e.target.style.height = "auto";
-                e.target.style.height = e.target.scrollHeight + "px";
-              }}
+              onInput={handleTextareaInput}
             />
           </div>
         </div>

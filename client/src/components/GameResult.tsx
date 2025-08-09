@@ -1,19 +1,33 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import type { GameResult as GameResultType } from "../const/const";
 import { useGame } from "../context/GameContextCore";
 
-function GameResult() {
-  const { gameResult, handleRestartGame: onRestart } = useGame();
-  const [isPrinting, setIsPrinting] = useState(false);
-  const [printProgress, setPrintProgress] = useState(0);
-  const [reportSections, setReportSections] = useState({});
+/**
+ * 打印机效果组件属性
+ */
+interface PrinterEffectProps {
+  /** 是否正在打印 */
+  isPrinting: boolean;
+  /** 打印进度 */
+  printProgress: number;
+  /** 开始打印回调 */
+  onStartPrint: () => void;
+  /** 重新开始回调 */
+  onRestart: () => void;
+  /** 游戏结果 */
+  gameResult: GameResultType | null;
+}
 
-  // 解析最终报告内容
-  useEffect(() => {
-    if (gameResult?.final_report) {
-      const sections = parseMarkdownReport(gameResult.final_report);
-      setReportSections(sections);
-    }
-  }, [gameResult]);
+/**
+ * 游戏结果组件
+ * 显示游戏结束后的结果和打印效果
+ */
+function GameResult() {
+  const { gameResult, handleRestartGame } = useGame();
+  const [isPrinting, setIsPrinting] = useState<boolean>(false);
+  const [printProgress, setPrintProgress] = useState<number>(0);
+
+  console.log(gameResult);
 
   useEffect(() => {
     // 5秒后开始打印动画
@@ -23,35 +37,6 @@ function GameResult() {
 
     return () => clearTimeout(startTimer);
   }, []);
-
-  // 解析markdown格式的报告
-  const parseMarkdownReport = (report) => {
-    const sections = {};
-    const lines = report.split("\n");
-    let currentSection = "";
-    let currentContent = [];
-
-    for (const line of lines) {
-      if (line.startsWith("##") || line.startsWith("#")) {
-        // 保存上一个section
-        if (currentSection && currentContent.length > 0) {
-          sections[currentSection] = currentContent.join("\n").trim();
-        }
-        // 开始新section
-        currentSection = line.replace(/^#+\s*/, "").trim();
-        currentContent = [];
-      } else if (line.trim()) {
-        currentContent.push(line);
-      }
-    }
-
-    // 保存最后一个section
-    if (currentSection && currentContent.length > 0) {
-      sections[currentSection] = currentContent.join("\n").trim();
-    }
-
-    return sections;
-  };
 
   useEffect(() => {
     if (isPrinting) {
@@ -70,16 +55,20 @@ function GameResult() {
     }
   }, [isPrinting]);
 
-  const handleStartPrint = () => {
+  /**
+   * 处理开始打印
+   */
+  const handleStartPrint = (): void => {
     setIsPrinting(true);
   };
 
-  const handleRestart = () => {
+  /**
+   * 处理重新开始
+   */
+  const handleRestart = (): void => {
     setIsPrinting(false);
     setPrintProgress(0);
-    if (onRestart) {
-      onRestart();
-    }
+    handleRestartGame();
   };
 
   return (
@@ -89,20 +78,23 @@ function GameResult() {
         printProgress={printProgress}
         onStartPrint={handleStartPrint}
         onRestart={handleRestart}
-        reportSections={reportSections}
         gameResult={gameResult}
       />
     </div>
   );
 }
 
+/**
+ * 打印机效果组件
+ * 模拟打印机打印报告的效果
+ */
 function PrinterEffect({
   isPrinting,
   printProgress,
   onStartPrint,
   onRestart,
-  reportSections,
-}) {
+  gameResult,
+}: PrinterEffectProps) {
   return (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden relative flex flex-col">
       {/* 打印机背景 */}
@@ -164,64 +156,7 @@ function PrinterEffect({
                 </div>
               )}
 
-              {printProgress > 35 && reportSections["公司发展概述"] && (
-                <div className="animate-slideDown">
-                  <div className="font-semibold mb-2 text-sm">公司发展概述</div>
-                  <div className="text-sm leading-relaxed whitespace-pre-line">
-                    {reportSections["公司发展概述"]
-                      .split("\n")
-                      .slice(0, 2)
-                      .join("\n")}
-                  </div>
-                </div>
-              )}
-
-              {printProgress > 50 && reportSections["公司发展概述"] && (
-                <div className="animate-slideDown">
-                  <div className="text-sm leading-relaxed whitespace-pre-line">
-                    {reportSections["公司发展概述"]
-                      .split("\n")
-                      .slice(2)
-                      .join("\n")}
-                  </div>
-                </div>
-              )}
-
-              {printProgress > 65 && reportSections["核心成员个人未来故事"] && (
-                <div className="animate-slideDown">
-                  <div className="font-semibold mb-2 text-sm">
-                    核心成员未来故事
-                  </div>
-                  <div className="text-sm leading-relaxed whitespace-pre-line">
-                    {reportSections["核心成员个人未来故事"]
-                      .split("\n")
-                      .slice(0, 3)
-                      .join("\n")}
-                  </div>
-                </div>
-              )}
-
-              {printProgress > 80 && reportSections["核心成员个人未来故事"] && (
-                <div className="animate-slideDown">
-                  <div className="text-sm leading-relaxed whitespace-pre-line">
-                    {reportSections["核心成员个人未来故事"]
-                      .split("\n")
-                      .slice(3, 6)
-                      .join("\n")}
-                  </div>
-                </div>
-              )}
-
-              {printProgress > 95 && reportSections["核心成员个人未来故事"] && (
-                <div className="animate-slideDown">
-                  <div className="text-sm leading-relaxed whitespace-pre-line">
-                    {reportSections["核心成员个人未来故事"]
-                      .split("\n")
-                      .slice(6)
-                      .join("\n")}
-                  </div>
-                </div>
-              )}
+              {gameResult?.final_report}
             </div>
           </div>
         </div>

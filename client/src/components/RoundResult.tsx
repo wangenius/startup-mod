@@ -1,28 +1,80 @@
 import { useState } from 'react';
+import type { Player, PlayerAction } from '../const/const';
 
+/**
+ * 轮次结果组件属性
+ */
+interface RoundResultProps {
+  /** 轮次编号 */
+  roundNumber: number;
+  /** 玩家行动列表 */
+  playerActions?: PlayerAction[];
+  /** 玩家列表 */
+  players?: Player[];
+  /** 当前玩家名称 */
+  playerName: string;
+  /** 继续下一轮回调 */
+  onContinueToNextRound: () => void;
+}
+
+/**
+ * 角色图标映射类型
+ */
+interface RoleIconMap {
+  [key: string]: string;
+}
+
+/**
+ * 行动图标映射类型
+ */
+interface ActionIconMap {
+  [key: string]: string;
+}
+
+/**
+ * 行动名称映射类型
+ */
+interface ActionNameMap {
+  [key: string]: string;
+}
+
+/**
+ * 轮次结果组件
+ * 显示某一轮次的结果和玩家行动汇总
+ */
 function RoundResult({ 
   roundNumber, 
   playerActions, 
   players,
   playerName,
   onContinueToNextRound 
-}) {
-  const [showDetails, setShowDetails] = useState(false);
+}: RoundResultProps) {
+  const [showDetails, setShowDetails] = useState<boolean>(false);
 
-  // 获取角色对应的图标
-  const getRoleIcon = (role) => {
-    const icons = {
+  /**
+   * 获取角色对应的图标
+   * @param role - 角色名称
+   * @returns 角色图标
+   */
+  const getRoleIcon = (role?: string): string => {
+    if (!role) return '👤';
+    
+    const icons: RoleIconMap = {
       'ceo': '👔',
       'cto': '💻', 
       'cmo': '📈',
       'coo': '⚙️'
     };
-    return icons[role?.toLowerCase()] || '👤';
+    return icons[role.toLowerCase()] || '👤';
   };
 
-  // 获取行动对应的图标
-  const getActionIcon = (actionId) => {
-    const icons = {
+  /**
+   * 获取行动对应的图标
+   * @param actionId - 行动ID
+   * @returns 行动图标
+   */
+  const getActionIcon = (actionId: string): string => {
+    const icons: ActionIconMap = {
       'strategic_decision': '🎯',
       'funding_round': '💰',
       'partnership': '🤝',
@@ -43,9 +95,13 @@ function RoundResult({
     return icons[actionId] || '📝';
   };
 
-  // 获取行动名称
-  const getActionName = (actionId) => {
-    const names = {
+  /**
+   * 获取行动名称
+   * @param actionId - 行动ID
+   * @returns 行动名称
+   */
+  const getActionName = (actionId: string): string => {
+    const names: ActionNameMap = {
       'strategic_decision': '制定战略决策',
       'funding_round': '启动融资',
       'partnership': '建立合作关系',
@@ -94,7 +150,7 @@ function RoundResult({
           
           <div className="space-y-4">
             {playerActions?.map((action, index) => {
-              const player = players?.find(p => p.name === action.player);
+              const player = players?.find(p => p.name === action.playerName);
               return (
                 <div key={index} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -104,7 +160,7 @@ function RoundResult({
                       </span>
                       <div>
                         <div className="font-medium text-gray-800">
-                          {action.player}
+                          {action.playerName}
                         </div>
                         <div className="text-sm text-gray-600">
                           {player?.role?.toUpperCase()}
@@ -121,13 +177,16 @@ function RoundResult({
                     </div>
                   </div>
                   
-                  {showDetails && action.reason && (
+                  {showDetails && action.timestamp && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                       <div className="text-sm font-medium text-gray-700 mb-1">
-                        决策理由：
+                        行动详情：
                       </div>
                       <div className="text-sm text-gray-600">
-                        {action.reason}
+                        行动类型：{action.actionType}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        提交时间：{new Date(action.timestamp).toLocaleString()}
                       </div>
                     </div>
                   )}

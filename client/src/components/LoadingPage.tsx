@@ -1,9 +1,36 @@
-function LoadingPage({ playerName, roleName }) {
+/**
+ * 加载页面组件属性
+ */
+interface LoadingPageProps {
+  /** 玩家名称 */
+  playerName?: string;
+  /** 角色名称 */
+  roleName?: string;
+}
+
+/**
+ * 角色图片映射类型
+ */
+interface RoleImageMap {
+  [key: string]: string;
+}
+
+/**
+ * 加载页面组件
+ * 显示玩家角色信息和加载动画
+ */
+function LoadingPage({ playerName, roleName }: LoadingPageProps) {
   const displayName = roleName || playerName || "林燃";
 
-  // 根据角色名称确定对应的图片
-  const getRoleImage = (role) => {
-    const roleImageMap = {
+  /**
+   * 根据角色名称确定对应的图片
+   * @param role - 角色名称
+   * @returns 图片路径
+   */
+  const getRoleImage = (role?: string): string => {
+    if (!role) return "/image (1).png";
+    
+    const roleImageMap: RoleImageMap = {
       CEO: "/image (2).png",
       CTO: "/image (3).png",
       CMO: "/image (4).png",
@@ -12,6 +39,7 @@ function LoadingPage({ playerName, roleName }) {
     };
     return roleImageMap[role.toUpperCase()] || "/image (1).png"; // 默认使用CEO图片
   };
+
   return (
     <div className="min-h-screen w-full bg-black overflow-hidden flex flex-col items-center justify-center p-4">
       {/* 角色图片区域 */}
@@ -20,7 +48,7 @@ function LoadingPage({ playerName, roleName }) {
         <img
           className="w-64 h-40 relative z-10 rounded-lg"
           src={getRoleImage(roleName)}
-          alt={roleName}
+          alt={roleName || "角色"}
         />
         <div className="absolute bottom-0 right-0 text-white text-sm font-medium font-['Space_Grotesk'] [text-shadow:_0px_2px_1px_rgb(0_0_0_/_0.25)]">
           {displayName}

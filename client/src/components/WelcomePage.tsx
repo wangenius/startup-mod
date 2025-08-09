@@ -1,20 +1,32 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useGame } from "../context/GameContextCore";
+import { Button } from "./Button";
 
-function WelcomePage() {
-  const { handlePlayerNameSet: onPlayerNameSet } = useGame();
-  const [playerName, setPlayerName] = useState("");
+/**
+ * 欢迎页面组件
+ * 用户输入用户名的页面
+ */
+function UserNamePage() {
+  const { handlePlayerNameSet } = useGame();
+  const [playerName, setPlayerName] = useState<string>("");
 
-  const handleSubmit = (e) => {
+  /**
+   * 处理表单提交
+   * @param e - 表单事件
+   */
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (playerName.trim()) {
-      onPlayerNameSet(playerName.trim());
+      handlePlayerNameSet(playerName.trim());
     }
   };
 
   return (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col justify-center p-6">
-      <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-8">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col items-center space-y-8"
+      >
         {/* 输入区域 */}
         <div className="w-full max-w-sm">
           <div className="relative">
@@ -32,19 +44,16 @@ function WelcomePage() {
 
         {/* 确定按钮 */}
         <div className="mt-16">
-          <div className="p-1.5 bg-zinc-300/80 rounded-[20px] shadow-lg">
-            <button
-              type="submit"
-              disabled={!playerName.trim()}
-              className="px-14 py-5 rounded-2xl bg-gradient-to-b from-zinc-200 to-zinc-300 shadow-lg text-white text-lg font-normal font-['Cactus_Classical_Serif'] disabled:opacity-50 disabled:cursor-not-allowed hover:from-zinc-100 hover:to-zinc-200 transition-all duration-200"
-            >
-              确定
-            </button>
-          </div>
+          <Button
+            disabled={!playerName.trim()}
+            onClick={() => handleSubmit(new Event("submit") as any)}
+          >
+            确定
+          </Button>
         </div>
       </form>
     </div>
   );
 }
 
-export default WelcomePage;
+export default UserNamePage;

@@ -9,7 +9,9 @@ import {
   type GameResult, 
   type RoleDefinition,
   type WebSocketMessage,
-  type RoomStatus
+  type RoomStatus,
+  type RoomInfo,
+  type RoomListResponse
 } from "../const/const";
 import { GameContext, type GameContextType } from "./GameContextCore";
 
@@ -125,6 +127,12 @@ export function GameProvider({ children }: GameProviderProps) {
   
   /** 角色定义数据 */
   const [roleDefinitions, setRoleDefinitions] = useState<Record<string, RoleDefinition> | null>(null);
+  
+  /** 房间列表数据 */
+  const [roomList, setRoomList] = useState<RoomInfo[]>([]);
+  
+  /** 是否正在加载房间列表 */
+  const [loadingRoomList, setLoadingRoomList] = useState<boolean>(false);
 
   // ==================== 内部状态 ====================
   
@@ -745,6 +753,73 @@ export function GameProvider({ children }: GameProviderProps) {
   };
 
   /**
+   * 处理退出房间
+   * 关闭WebSocket连接，清除保存状态，返回房间选择页面
+   */
+  const handleExitRoom = (): void => {
+    // 关闭WebSocket连接
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    
+    // 清除保存的游戏状态
+    clearSavedState();
+    
+    // 重置相关状态
+    setWsConnected(false);
+    setCurrentRoom("");
+    setPlayers([]);
+    setGameState(GAME_STATES.ROOM_SELECTION);
+    
+    // 重置游戏状态
+    setCurrentRound(1);
+    setRoundEvent(null);
+    setPrivateMessages({});
+    setPlayerActions([]);
+    setGameResult(null);
+    setSelectedRoles([]);
+    setWaitingForPlayers(false);
+    setGameBackground(null);
+    setRoleDefinitions(null);
+    
+    addMessage("已退出房间，返回房间选择页面");
+  };
+
+  /**
+   * 获取房间列表
+   * 从服务器获取当前所有在线房间的信息
+   */
+  const fetchRoomList = async (): Promise<void> => {
+    setLoadingRoomList(true);
+    try {
+      console.log(`发起房间列表请求: ${API_BASE}/rooms`);
+      const response = await fetch(`${API_BASE}/rooms`);
+      console.log(`房间列表响应状态: ${response.status}`);
+      
+      if (response.ok) {
+        const data: RoomListResponse = await response.json();
+        console.log("房间列表响应数据:", data);
+        setRoomList(data.rooms);
+        addMessage(`获取到 ${data.total_count} 个在线房间`);
+        console.log(`设置房间列表: ${data.rooms.length} 个房间`);
+      } else {
+        const errorText = await response.text();
+        console.error("获取房间列表失败:", response.status, errorText);
+        addMessage(`获取房间列表失败: ${response.status}`, "error");
+        setRoomList([]);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("获取房间列表错误:", error);
+      addMessage(`获取房间列表错误: ${errorMessage}`, "error");
+      setRoomList([]);
+    } finally {
+      setLoadingRoomList(false);
+    }
+  };
+
+  /**
    * 重置游戏状态
    * 将所有游戏相关状态重置为初始值
    */
@@ -759,6 +834,8 @@ export function GameProvider({ children }: GameProviderProps) {
     setWaitingForPlayers(false);
     setGameBackground(null);
     setRoleDefinitions(null);
+    setRoomList([]);
+    setLoadingRoomList(false);
     saveGameState(playerName, currentRoom, GAME_STATES.LOBBY);
     addMessage("🔄 游戏已重新开始，回到等待室");
   };
@@ -788,6 +865,8 @@ export function GameProvider({ children }: GameProviderProps) {
     waitingForPlayers,
     gameBackground,
     roleDefinitions,
+    roomList,
+    loadingRoomList,
 
     // ========== 事件处理方法 ==========
     handleInitialPageClick,
@@ -800,6 +879,8 @@ export function GameProvider({ children }: GameProviderProps) {
     handleStartRound,
     handleLoadingComplete,
     handleRestartGame,
+    handleExitRoom,
+    fetchRoomList,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

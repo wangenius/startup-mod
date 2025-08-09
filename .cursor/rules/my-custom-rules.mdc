@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+1. 所有和后端业务相关的，放到 GameContext 中去实现吧。

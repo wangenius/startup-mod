@@ -156,3 +156,36 @@ export interface RoomStatus {
   /** 是否已满 */
   is_full?: boolean;
 }
+
+/**
+ * 房间信息类型
+ */
+export interface RoomInfo {
+  /** 房间ID */
+  room_id: string;
+  /** 当前玩家数 */
+  player_count: number;
+  /** 最大玩家数 */
+  max_players: number;
+  /** 游戏状态 */
+  game_state: string;
+  /** 创建时间 */
+  created_at: string | null;
+  /** 玩家列表 */
+  players: Array<{
+    name: string;
+    is_host: boolean;
+  }>;
+}
+
+/**
+ * 房间列表响应类型
+ */
+export interface RoomListResponse {
+  /** 操作是否成功 */
+  success: boolean;
+  /** 房间列表 */
+  rooms: RoomInfo[];
+  /** 房间总数 */
+  total_count: number;
+}

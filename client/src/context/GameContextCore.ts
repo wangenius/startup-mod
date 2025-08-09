@@ -5,7 +5,8 @@ import type {
   RoundEvent, 
   PlayerAction, 
   GameResult, 
-  RoleDefinition 
+  RoleDefinition,
+  RoomInfo 
 } from "../const/const";
 
 /**
@@ -45,6 +46,10 @@ export interface GameContextType {
   gameBackground: string | null;
   /** 角色定义数据 */
   roleDefinitions: Record<string, RoleDefinition> | null;
+  /** 房间列表数据 */
+  roomList: RoomInfo[];
+  /** 是否正在加载房间列表 */
+  loadingRoomList: boolean;
 
   // ========== 事件处理方法 ==========
   /** 处理首页点击事件 */
@@ -67,6 +72,10 @@ export interface GameContextType {
   handleLoadingComplete: () => void;
   /** 处理重新开始游戏 */
   handleRestartGame: () => void;
+  /** 处理退出房间 */
+  handleExitRoom: () => void;
+  /** 获取房间列表 */
+  fetchRoomList: () => Promise<void>;
 }
 
 /**

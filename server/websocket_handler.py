@@ -206,36 +206,55 @@ class WebSocketHandler:
     @staticmethod
     async def handle_disconnect(player_name: str):
         """处理玩家断开连接"""
+        # 先获取玩家所在房间ID（在断开连接之前）
+        room_id = connection_manager.get_player_room(player_name) or ""
+        
+        # 断开WebSocket连接
         connection_manager.disconnect(player_name)
 
         # 处理玩家离线
-        room_id = connection_manager.get_player_room(player_name) or ""
         if room_id:
             room = room_manager.get_room(room_id)
             if room:
+                # 先检查房间是否还有其他在线玩家（在移除当前玩家之前）
+                other_online_players = [p for p in room.get_online_players() if p.name != player_name]
+                
+                # 移除玩家（设为离线状态）
                 room.remove_player(player_name)
                 logger.info(f"玩家 {player_name} 离开房间 {room_id}")
 
-                # 广播玩家离线
-                await connection_manager.broadcast_to_room(
-                    room_id,
-                    {
-                        "type": MessageType.PLAYER_LEAVE,
-                        "data": {
-                            "player_name": player_name,
-                            "players": [
-                                {
-                                    "name": p.name,
-                                    "is_online": p.is_online,
-                                    "role": p.role,
-                                    "startup_idea": p.startup_idea,
-                                    "isHost": p.is_host,
-                                }
-                                for p in room.players
-                            ],
+                # 如果还有其他在线玩家，先通知他们玩家离开
+                if other_online_players:
+                    logger.info(f"向房间 {room_id} 中的 {len(other_online_players)} 个在线玩家广播 {player_name} 离开消息")
+                    await connection_manager.broadcast_to_room(
+                        room_id,
+                        {
+                            "type": MessageType.PLAYER_LEAVE,
+                            "data": {
+                                "player_name": player_name,
+                                "players": [
+                                    {
+                                        "name": p.name,
+                                        "is_online": p.is_online,
+                                        "role": p.role,
+                                        "startup_idea": p.startup_idea,
+                                        "isHost": p.is_host,
+                                    }
+                                    for p in room.players
+                                ],
+                            },
                         },
-                    },
-                )
+                    )
+                    logger.info(f"已完成广播 {player_name} 离开消息")
+                else:
+                    logger.info(f"房间 {room_id} 没有其他在线玩家，跳过广播离开消息")
+                
+                # 检查房间是否还有在线玩家（现在检查的是更新后的状态）
+                online_players = room.get_online_players()
+                if not online_players:
+                    # 房间没有在线玩家，删除房间
+                    room_manager.remove_room(room_id)
+                    logger.info(f"房间 {room_id} 已清理：无在线玩家")
 
 
 # 全局WebSocket处理器实例

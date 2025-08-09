@@ -1,11 +1,11 @@
 import EventGeneration from "./components/EventGeneration";
 import GameLoadingPage from "./components/GameLoadingPage";
-import GameLobby from "./components/GameLobby";
+import IdeaPickerInRoom from "./components/room/IdeaPickerInRoom";
 import GamePlay from "./components/GamePlay";
 import GameResult from "./components/GameResult";
 import { InitialPage } from "./components/InitialPage";
 import RoleSelection from "./components/roleSelection/RoleSelection";
-import RoomManager from "./components/room/RoomManager";
+import RoomEntrance from "./components/room/RoomEntrance";
 import RoundLoadingPage from "./components/RoundLoadingPage";
 import UserNamePage from "./components/WelcomePage";
 import { GAME_STATES } from "./const/const";
@@ -21,9 +21,9 @@ function App() {
       case GAME_STATES.WELCOME:
         return <UserNamePage />;
       case GAME_STATES.ROOM_SELECTION:
-        return <RoomManager />;
+        return <RoomEntrance />;
       case GAME_STATES.LOBBY:
-        return <GameLobby />;
+        return <IdeaPickerInRoom />;
       case GAME_STATES.ROLE_SELECTION:
         return <RoleSelection />;
       case GAME_STATES.LOADING:

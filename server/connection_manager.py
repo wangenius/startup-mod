@@ -24,6 +24,9 @@ class ConnectionManager:
         """断开WebSocket连接"""
         if player_id in self.active_connections:
             del self.active_connections[player_id]
+        # 同时从房间映射中移除
+        if player_id in self.player_rooms:
+            del self.player_rooms[player_id]
         logger.info(f"玩家 {player_id} 已断开连接")
 
     def join_room(self, player_id: str, room_id: str):
@@ -53,11 +56,20 @@ class ConnectionManager:
         
         room = room_manager.get_room(room_id)
         if room:
+            sent_count = 0
             for player in room.players:
                 if player.is_online and player.name in self.active_connections:
                     if exclude_player and player.name == exclude_player:
+                        logger.info(f"跳过发送消息给排除的玩家: {player.name}")
                         continue
+                    logger.info(f"发送 {message.get('type', 'unknown')} 消息给玩家: {player.name}")
                     await self.send_to_player(player.name, message)
+                    sent_count += 1
+                else:
+                    logger.info(f"跳过离线或未连接的玩家: {player.name} (is_online: {player.is_online}, connected: {player.name in self.active_connections})")
+            logger.info(f"房间 {room_id} 广播消息完成，发送给 {sent_count} 个玩家")
+        else:
+            logger.warning(f"尝试向不存在的房间 {room_id} 广播消息")
 
     def get_connected_players(self) -> list:
         """获取所有已连接的玩家列表"""

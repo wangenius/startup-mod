@@ -1,4 +1,7 @@
-export function InitialPage({ onClick }) {
+import { useGame } from "../context/GameContextCore";
+
+export function InitialPage() {
+  const { handleInitialPageClick: onClick } = useGame();
   return (
     <div 
       className="min-h-screen w-full bg-stone-950 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity flex flex-col justify-between p-4"

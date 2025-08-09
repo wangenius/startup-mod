@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
+import { useGame } from "../context/GameContextCore";
 
-function RoomManager({ onRoomAction }) {
+function RoomManager() {
+  const { handleRoomAction: onRoomAction } = useGame();
   const [teamCode, setTeamCode] = useState(["", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef([]);

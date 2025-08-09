@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Button } from "./Button";
+import { useGame } from "../context/GameContextCore";
 
-function GameLobby({ onStartupIdeaSubmit }) {
+function GameLobby() {
+  const { handleStartupIdeaSubmit } = useGame();
   const [startupIdea, setStartupIdea] = useState("");
   const [ideaSubmitted, setIdeaSubmitted] = useState(false);
 
   const handleSubmitIdea = () => {
     if (startupIdea.trim()) {
-      onStartupIdeaSubmit(startupIdea.trim());
+      handleStartupIdeaSubmit(startupIdea.trim());
       setIdeaSubmitted(true);
     }
   };

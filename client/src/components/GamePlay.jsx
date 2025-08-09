@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "./Button";
+import { useGame } from "../context/GameContextCore";
 
 // 游戏阶段枚举
 const GAME_PHASES = {
@@ -9,14 +10,15 @@ const GAME_PHASES = {
   SELECTION: "selection", // 4. 选择确认
 };
 
-function GamePlay({
-  gameState,
-  playerName,
-  currentRound,
-  roundEvent,
-  privateMessages,
-  onActionSubmit,
-}) {
+function GamePlay() {
+  const {
+    players,
+    playerName,
+    currentRound,
+    roundEvent,
+    privateMessages,
+    handleActionSubmit: onActionSubmit,
+  } = useGame();
   const [selectedAction, setSelectedAction] = useState("");
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [currentPhase, setCurrentPhase] = useState(GAME_PHASES.EVENT_DISPLAY);
@@ -114,7 +116,7 @@ function GamePlay({
     }
   };
 
-  const currentPlayer = gameState.players?.find((p) => p.name === playerName);
+  const currentPlayer = players?.find((p) => p.name === playerName);
   const playerRole = currentPlayer?.role;
 
   // 渲染不同阶段的组件

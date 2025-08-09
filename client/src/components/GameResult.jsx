@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useGame } from "../context/GameContextCore";
 
-function GameResult({ gameResult, onRestart }) {
+function GameResult() {
+  const { gameResult, handleRestartGame: onRestart } = useGame();
   const [isPrinting, setIsPrinting] = useState(false);
   const [printProgress, setPrintProgress] = useState(0);
   const [reportSections, setReportSections] = useState({});

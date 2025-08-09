@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useGame } from "../context/GameContextCore";
 
-function WelcomePage({ onPlayerNameSet }) {
+function WelcomePage() {
+  const { handlePlayerNameSet: onPlayerNameSet } = useGame();
   const [playerName, setPlayerName] = useState("");
 
   const handleSubmit = (e) => {

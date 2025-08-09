@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useGame } from "../context/GameContextCore";
 
 // 角色定义
 const ROLES = [
@@ -20,12 +21,8 @@ const ROLES = [
   },
 ];
 
-function RoleSelection({
-  players = [],
-  playerName,
-  onRoleSelect,
-  selectedRoles = [],
-}) {
+function RoleSelection() {
+  const { players = [], playerName, handleRoleSelect: onRoleSelect, selectedRoles = [] } = useGame();
   const [selectedRole, setSelectedRole] = useState(null);
 
   const handleRoleSelect = (roleId) => {

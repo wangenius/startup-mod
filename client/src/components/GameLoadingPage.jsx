@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useGame } from "../context/GameContextCore";
 
-function GameLoadingPage({ playerName, roleDefinitions }) {
+function GameLoadingPage() {
+  const { playerName, roleDefinitions } = useGame();
   const [currentView, setCurrentView] = useState('loading'); // 'loading', 'video1', 'video2'
 
   // 获取当前玩家的角色信息

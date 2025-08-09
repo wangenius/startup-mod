@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useGame } from "../context/GameContextCore";
 
-function EventGeneration({ 
-  playerName, 
-  onStartRound 
-}) {
+function EventGeneration() {
+  const { playerName, handleStartRound: onStartRound } = useGame();
   const [animationPhase, setAnimationPhase] = useState('intro'); // intro, loading, complete
   const [countdown, setCountdown] = useState(5);
   

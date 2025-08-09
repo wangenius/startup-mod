@@ -1,4 +1,7 @@
+import { useGame } from "../context/GameContextCore";
+
 function RoundLoadingPage() {
+  const { currentRound } = useGame();
   return (
     <div className="min-h-screen w-full bg-stone-950 overflow-hidden flex flex-col items-center justify-center p-4">
       <video
@@ -8,7 +11,7 @@ function RoundLoadingPage() {
         loop
         controls={false}
       />
-      <p className="text-white text-lg mt-4">公司发展中...</p>
+      <p className="text-white text-lg mt-4">公司发展中... 第{currentRound}轮</p>
     </div>
   );
 }

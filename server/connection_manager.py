@@ -57,7 +57,9 @@ class ConnectionManager:
         room = room_manager.get_room(room_id)
         if room:
             sent_count = 0
+            logger.info(f"房间 {room_id} 开始广播 {message.get('type', 'unknown')} 消息，房间内共有 {len(room.players)} 个玩家")
             for player in room.players:
+                logger.info(f"检查玩家 {player.name}: is_online={player.is_online}, in_active_connections={player.name in self.active_connections}")
                 if player.is_online and player.name in self.active_connections:
                     if exclude_player and player.name == exclude_player:
                         logger.info(f"跳过发送消息给排除的玩家: {player.name}")

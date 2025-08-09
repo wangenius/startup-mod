@@ -1,7 +1,7 @@
 import EventGeneration from "./components/EventGeneration";
 import GameLoadingPage from "./components/GameLoadingPage";
 import IdeaPickerInRoom from "./components/room/IdeaPickerInRoom";
-import GamePlay from "./components/GamePlay";
+import GamePlay from "./components/gameplay/GamePlay";
 import GameResult from "./components/GameResult";
 import { InitialPage } from "./components/InitialPage";
 import RoleSelection from "./components/roleSelection/RoleSelection";

@@ -7,7 +7,7 @@ import { useGame } from "../../context/GameContextCore";
  * 用户输入创业想法的页面
  */
 function IdeaPickerInRoom() {
-  const { handleStartupIdeaSubmit, handleExitRoom } = useGame();
+  const { handleStartupIdeaSubmit, handleExitRoom, currentRoom, players } = useGame();
   const handleSubmit = handleStartupIdeaSubmit;
   const [startupIdea, setStartupIdea] = useState<string>("");
   const [ideaSubmitted, setIdeaSubmitted] = useState<boolean>(false);
@@ -74,6 +74,48 @@ function IdeaPickerInRoom() {
         </svg>
         退出房间
       </button>
+
+      {/* 房间信息 */}
+      <div className="absolute top-4 right-4 text-right">
+        {/* 房间号 */}
+        <div className="text-white/70 text-sm font-normal font-['Cactus_Classical_Serif'] mb-2">
+          房间号: <span className="text-white">{currentRoom}</span>
+        </div>
+        
+        {/* 玩家列表 */}
+        <div className="text-white/70 text-sm font-normal font-['Cactus_Classical_Serif']">
+          <div className="mb-1">在线玩家 ({players.length}):</div>
+          <div className="space-y-1">
+            {players.map((player, index) => (
+              <div key={index} className="flex items-center justify-end gap-2">
+                <span className="text-white">{player.name}</span>
+                <div className="flex items-center gap-1">
+                  {/* 连接状态指示器 */}
+                  <div className={`w-2 h-2 rounded-full ${
+                    player.online ? 'bg-green-400' : 'bg-red-400'
+                  }`} />
+                  {/* 想法提交状态 */}
+                  {player.idea && (
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-green-400"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
       
       <div className="flex flex-col items-center space-y-8">
         {/* 输入区域 */}

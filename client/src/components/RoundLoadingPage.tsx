@@ -16,9 +16,9 @@ function RoundLoadingPage() {
         loop
         controls={false}
       />
-      <p className="text-white text-lg mt-4">
-        公司发展中... 第{currentRound}轮
-      </p>
+      <p className="text-white text-lg mt-4">公司发展中...</p>
+      <p className="text-white text-lg mt-4">第{currentRound}轮</p>
+      <small className="text-white text-sm mt-4">一共5轮</small>
     </div>
   );
 }

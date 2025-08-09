@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import type { GameResult as GameResultType } from "../const/const";
 import { useGame } from "../context/GameContextCore";
 
@@ -156,7 +157,58 @@ function PrinterEffect({
                 </div>
               )}
 
-              {gameResult?.final_report}
+              {gameResult?.final_report && (
+                <div className="markdown-content prose prose-sm max-w-none">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({ children }) => (
+                        <h1 className="text-xl font-bold mb-3 text-zinc-900">{children}</h1>
+                      ),
+                      h2: ({ children }) => (
+                        <h2 className="text-lg font-semibold mb-2 text-zinc-800">{children}</h2>
+                      ),
+                      h3: ({ children }) => (
+                        <h3 className="text-base font-medium mb-2 text-zinc-700">{children}</h3>
+                      ),
+                      p: ({ children }) => (
+                        <p className="mb-3 text-zinc-700 leading-relaxed">{children}</p>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className="mb-3 pl-4 space-y-1">{children}</ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="mb-3 pl-4 space-y-1 list-decimal">{children}</ol>
+                      ),
+                      li: ({ children }) => (
+                        <li className="text-zinc-700 leading-relaxed">{children}</li>
+                      ),
+                      strong: ({ children }) => (
+                        <strong className="font-semibold text-zinc-900">{children}</strong>
+                      ),
+                      em: ({ children }) => (
+                        <em className="italic text-zinc-600">{children}</em>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="border-l-4 border-zinc-300 pl-4 my-3 text-zinc-600 italic">
+                          {children}
+                        </blockquote>
+                      ),
+                      code: ({ children }) => (
+                        <code className="bg-zinc-100 text-zinc-800 px-1 py-0.5 rounded text-sm font-mono">
+                          {children}
+                        </code>
+                      ),
+                      pre: ({ children }) => (
+                        <pre className="bg-zinc-100 p-3 rounded overflow-x-auto mb-3">
+                          {children}
+                        </pre>
+                      ),
+                    }}
+                  >
+                    {gameResult.final_report}
+                  </ReactMarkdown>
+                </div>
+              )}
             </div>
           </div>
         </div>

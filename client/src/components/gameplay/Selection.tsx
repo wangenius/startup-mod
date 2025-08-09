@@ -56,11 +56,11 @@ export const Selection = ({
           className="opacity-60 text-white text-lg font-normal font-['Cactus_Classical_Serif'] uppercase leading-normal cursor-pointer hover:opacity-80 transition-opacity duration-200"
           onClick={onShowEventModal}
         >
-          第{currentRound}阶段
+          第{currentRound}阶段（点击查看剧情）
         </div>
 
         {/* 倒计时 */}
-        <div className="text-white text-lg font-normal font-['Space_Grotesk']">
+        <div className="text-white text-xs font-normal font-['Space_Grotesk']">
           {selectionTimeLeft > 0 ? selectionTimeLeft + "s" : "请您做出选择"}
         </div>
       </div>
@@ -129,7 +129,7 @@ export const Selection = ({
             className="relative cursor-pointer hover:scale-105 transition-transform duration-200 max-w-sm mx-auto"
             onClick={onShowPrivateModal}
           >
-            <img className="w-full h-48" src="./paper.png" alt="私人信息" />
+            <img className="w-full h-40" src="./paper.png" alt="私人信息" />
             <div className="absolute inset-0 flex flex-col justify-center items-start px-6 py-4">
               {/* 顶部提示文字 */}
               <div className="opacity-60 text-neutral-600 text-xs font-normal font-['Cactus_Classical_Serif'] uppercase leading-none mb-2 text-start">

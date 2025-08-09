@@ -102,6 +102,14 @@ function GameLoadingPage() {
           alt="CEO角色"
         />
 
+        {/* 游戏规则说明 */}
+        <div className="text-center text-white text-lg font-normal font-['Cactus_Classical_Serif'] leading-relaxed mb-4">
+          <div className="text-yellow-300 text-xl mb-2">游戏规则</div>
+          每个角色都有双重任务：
+          <br />
+          <span className="text-green-300">让公司变得更好</span> + <span className="text-blue-300">让自己职业生涯变得更好</span>
+        </div>
+
         {/* 角色名称 */}
         <div className="text-center text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
           你是{roleName}
@@ -109,9 +117,9 @@ function GameLoadingPage() {
 
         {/* 任务描述 */}
         <div className="text-center text-white text-xl font-normal font-['Cactus_Classical_Serif'] leading-relaxed">
-          你的任务是带领公司
+          你的目标是平衡两个任务
           <br />
-          成功上市，估值一千万！
+          带领公司成功上市，估值一千万！
         </div>
 
         {/* 加载动画和"即将开始"文字 */}

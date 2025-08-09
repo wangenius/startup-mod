@@ -36,6 +36,7 @@ export const InfoAndOptions = ({
             playerName={playerName}
             playerRole={playerRole}
             getRoleImage={getRoleImage}
+            size="medium"
           />
         </div>
 
